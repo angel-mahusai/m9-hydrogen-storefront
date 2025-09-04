@@ -42,6 +42,47 @@ img {
 
 /*
 * --------------------------------------------------
+* components/AnnouncementBar
+* --------------------------------------------------
+*/
+.announcement-bar {
+  background-color: var(--color-primary-light);
+  width: 100%;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-main-text);
+}
+
+.announcement-bar__ticker {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: start;
+  width: max-content;
+  height: 100%;
+  gap: var(--padding-inner);
+  padding-left: var(--padding-inner);
+}
+
+.announcement-item {
+  color: var(--color-primary-main);
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 300;
+}
+
+.announcement-bar__ticker {
+  position: relative;
+  white-space: nowrap;
+  animation: announcement_bar_move 40s linear infinite;
+}
+
+@keyframes announcement_bar_move {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+/*
+* --------------------------------------------------
 * components/Aside
 * --------------------------------------------------
 */
