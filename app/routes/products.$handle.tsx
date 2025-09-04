@@ -15,7 +15,7 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
-    {title: `Hydrogen | ${data?.product.title ?? ''}`},
+    {title: `Project Playground | ${data?.product.title ?? ''}`},
     {
       rel: 'canonical',
       href: `/products/${data?.product.handle}`,
@@ -100,7 +100,6 @@ export default function Product() {
   });
 
   const {title, descriptionHtml} = product;
-
   return (
     <div className="product">
       <ProductImage image={selectedVariant?.image} />

@@ -6,7 +6,9 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.collection.title ?? ''} Collection`}];
+  return [
+    {title: `Project Playground | ${data?.collection.title ?? ''} Collection`},
+  ];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

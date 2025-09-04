@@ -13,7 +13,7 @@ import {
 } from '~/lib/search';
 
 export const meta: MetaFunction = () => {
-  return [{title: `Hydrogen | Search`}];
+  return [{title: `Project Playground | Search`}];
 };
 
 export async function loader({request, context}: LoaderFunctionArgs) {
