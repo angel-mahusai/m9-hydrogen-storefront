@@ -6,7 +6,7 @@ import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
-  return [{title: `Hydrogen | ${data?.blog.title ?? ''} blog`}];
+  return [{title: `Project Playground | ${data?.blog.title ?? ''} blog`}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {
@@ -108,7 +108,7 @@ function ArticleItem({
               aspectRatio="3/2"
               data={article.image}
               loading={loading}
-              sizes="(min-width: 768px) 50vw, 100vw"
+              sizes="(min-width: 45em) 50vw, 100vw"
             />
           </div>
         )}

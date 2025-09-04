@@ -62,7 +62,7 @@ function FooterMenu({
             end
             key={item.id}
             prefetch="intent"
-            style={activeLinkStyle}
+            // style={activeLinkStyle}
             to={url}
           >
             {item.title}
@@ -115,15 +115,15 @@ const FALLBACK_FOOTER_MENU = {
   ],
 };
 
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
-}
+// function activeLinkStyle({
+//   isActive,
+//   isPending,
+// }: {
+//   isActive: boolean;
+//   isPending: boolean;
+// }) {
+//   return {
+//     fontWeight: isActive ? 'bold' : undefined,
+//     color: isPending ? 'grey' : 'white',
+//   };
+// }

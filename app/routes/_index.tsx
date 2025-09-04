@@ -9,7 +9,7 @@ import type {
 import {ProductItem} from '~/components/ProductItem';
 
 export const meta: MetaFunction = () => {
-  return [{title: 'Hydrogen | Home'}];
+  return [{title: 'Project Playground | Home'}];
 };
 
 export async function loader(args: LoaderFunctionArgs) {

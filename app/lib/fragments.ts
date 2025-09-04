@@ -162,6 +162,7 @@ export const CART_QUERY_FRAGMENT = `#graphql
   }
 ` as const;
 
+
 const MENU_FRAGMENT = `#graphql
   fragment MenuItem on MenuItem {
     id
@@ -173,6 +174,9 @@ const MENU_FRAGMENT = `#graphql
   }
   fragment ChildMenuItem on MenuItem {
     ...MenuItem
+    items {
+      ...MenuItem
+    }
   }
   fragment ParentMenuItem on MenuItem {
     ...MenuItem
@@ -199,7 +203,56 @@ export const HEADER_QUERY = `#graphql
     brand {
       logo {
         image {
+          id
           url
+          height
+          width
+          altText
+        }
+      }
+    }
+  }
+  fragment MetaobjectConnection on MetaobjectConnection {
+    nodes {
+      handle
+      id
+      type
+      menu_title: field(key: "menu_title") {value}
+      title: field(key: "title") {value}
+      subtitle: field(key: "subtitle") {value}
+      text_color: field(key: "text_color") {value}
+      image: field(key: "image") {
+        reference {
+          ... on MediaImage {
+            image {
+              id
+              url
+              height
+              width
+              altText
+            }
+          }
+        }
+      }
+      product: field(key: "product") {
+        reference {
+          ... on Product {
+            handle
+          }
+        }
+      }
+      collection: field(key: "collection") {
+        reference {
+          ... on Collection {
+            handle
+          }
+        }
+      }
+      page: field(key: "page") {
+        reference {
+          ... on Page {
+            handle
+          }
         }
       }
     }
@@ -207,6 +260,7 @@ export const HEADER_QUERY = `#graphql
   query Header(
     $country: CountryCode
     $headerMenuHandle: String!
+    $additionalMenuType: String!
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
     shop {
@@ -214,6 +268,9 @@ export const HEADER_QUERY = `#graphql
     }
     menu(handle: $headerMenuHandle) {
       ...Menu
+    }
+    metaobjects(type: $additionalMenuType, first: 10) {
+      ...MetaobjectConnection
     }
   }
   ${MENU_FRAGMENT}
