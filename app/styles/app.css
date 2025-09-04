@@ -4,8 +4,26 @@
   --cart-aside-summary-height: 250px;
   --grid-item-width: 355px;
   --header-height: 64px;
+
+  /* Padding */
+  --padding-top: 15px;
+  --padding-bottom: 15px;
+  --padding-inner: 16px;
+  --padding-outer: 32px;
+
+  /* Colors */
   --color-dark: #000;
   --color-light: #fff;
+  --color-background-light: oklch(0.9776 0.0051 67.76);
+  --color-background-medium: oklch(0.9461 0.0103 67.7);
+  --color-background-dark: oklch(0.903 0.0164 64.65);
+  --color-main-text: oklch(0 0 0);
+  --color-primary-light: oklch(0.8382 0.0368 245.69);
+  --color-primary-main: oklch(0.3736 0.0578 248.77);
+  --color-accent-yellow-green: oklch(0.9662 0.1531 113.28);
+  --color-accent-coral: oklch(0.7151 0.1785 27.97);
+  --color-newsletter-background: oklch(0.9518 0.0254 171.96);
+  --color-newsletter-text: oklch(0.241 0.0438 166.93);
 }
 
 img {
