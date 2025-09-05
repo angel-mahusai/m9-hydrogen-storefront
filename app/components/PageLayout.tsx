@@ -5,6 +5,7 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
+import {SearchIcon} from '../assets';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
 import {Header, HeaderMenu} from '~/components/Header';
@@ -41,7 +42,6 @@ export function PageLayout({
         ]}
       />
       <CartAside cart={cart} />
-      <SearchAside />
       <MobileMenuAside header={header} publicStoreDomain={publicStoreDomain} />
       {header && (
         <Header
@@ -49,6 +49,7 @@ export function PageLayout({
           cart={cart}
           isLoggedIn={isLoggedIn}
           publicStoreDomain={publicStoreDomain}
+          searchBar={<SearchAside />}
         />
       )}
       <main>{children}</main>
@@ -78,12 +79,14 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
 function SearchAside() {
   const queriesDatalistId = useId();
   return (
-    <Aside type="search" heading="SEARCH">
+    <Aside type="search" heading="">
       <div className="predictive-search">
-        <br />
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
             <>
+              <button className="search-icon" onClick={goToSearch}>
+                <SearchIcon />
+              </button>
               <input
                 name="q"
                 onChange={fetchResults}
@@ -93,8 +96,9 @@ function SearchAside() {
                 type="search"
                 list={queriesDatalistId}
               />
-              &nbsp;
-              <button onClick={goToSearch}>Search</button>
+              <button type="reset" className="search-reset">
+                CLEAR
+              </button>
             </>
           )}
         </SearchFormPredictive>

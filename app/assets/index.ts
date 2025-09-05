@@ -1,4 +1,9 @@
+export {default as ArrowLeftIcon} from './ArrowLeft';
+export {default as ArrowRightIcon} from './ArrowRight';
 export {default as CartIcon} from './Cart';
 export {default as MenuIcon} from './Menu';
+export {default as MinusIcon} from './Minus';
+export {default as PlusIcon} from './Plus';
 export {default as SearchIcon} from './Search';
 export {default as UserIcon} from './User';
+export {default as XIcon} from './X';

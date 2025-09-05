@@ -23,6 +23,7 @@ interface HeaderProps {
   cart: Promise<CartApiQueryFragment | null>;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
+  searchBar?: React.ReactNode;
 }
 
 type Viewport = 'desktop' | 'mobile';
@@ -32,6 +33,7 @@ export function Header({
   isLoggedIn,
   cart,
   publicStoreDomain,
+  searchBar,
 }: HeaderProps) {
   const {shop, menu, metaobjects} = header;
 
@@ -48,6 +50,10 @@ export function Header({
         publicStoreDomain={publicStoreDomain}
         additionalMenuItems={metaobjects.nodes}
       />
+      <nav className="header-ctas header-ctas__left header-menu-mobile-toggle">
+        <HeaderMenuMobileToggle />
+        <SearchToggle className={'header-menu-mobile-toggle'} />
+      </nav>
       <NavLink prefetch="intent" to="/" end>
         {shopImage?.url ? (
           <BrandImage image={shopImage} />
@@ -56,6 +62,7 @@ export function Header({
         )}
       </NavLink>
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
+      {searchBar}
     </header>
   );
 }
@@ -277,7 +284,6 @@ function HeaderCtas({
 }: Pick<HeaderProps, 'isLoggedIn' | 'cart'>) {
   return (
     <nav className="header-ctas" role="navigation">
-      <HeaderMenuMobileToggle />
       <NavLink prefetch="intent" to="/account">
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
@@ -285,7 +291,7 @@ function HeaderCtas({
           </Await>
         </Suspense>
       </NavLink>
-      <SearchToggle />
+      <SearchToggle className={'header-menu-desktop-toggle'} />
       <CartToggle cart={cart} />
     </nav>
   );
@@ -303,10 +309,13 @@ function HeaderMenuMobileToggle() {
   );
 }
 
-function SearchToggle() {
+function SearchToggle({className}: {className: string | null}) {
   const {open} = useAside();
   return (
-    <button className="reset" onClick={() => open('search')}>
+    <button
+      className={`reset${className && ` ${className}`}`}
+      onClick={() => open('search')}
+    >
       <SearchIcon />
     </button>
   );
