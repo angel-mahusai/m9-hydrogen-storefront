@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import {XIcon} from '../assets';
 
 type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
 type AsideContextValue = {
@@ -55,15 +56,18 @@ export function Aside({
   return (
     <div
       aria-modal
-      className={`overlay ${expanded ? 'expanded' : ''}`}
+      className={`overlay overlay--${type} ${expanded ? 'expanded' : ''}`}
       role="dialog"
     >
-      <button className="close-outside" onClick={close} />
-      <aside>
+      <button
+        className={`close-outside close-outside--${type}`}
+        onClick={close}
+      />
+      <aside className={`aside--${type}`}>
         <header>
           <h3>{heading}</h3>
           <button className="close reset" onClick={close} aria-label="Close">
-            &times;
+            <XIcon />
           </button>
         </header>
         <main>{children}</main>

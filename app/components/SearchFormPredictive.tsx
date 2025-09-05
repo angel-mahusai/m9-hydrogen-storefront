@@ -43,6 +43,15 @@ export function SearchFormPredictive({
     }
   }
 
+  function clearInput(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (inputRef?.current?.value) {
+      inputRef.current.value = '';
+      inputRef.current.focus();
+    }
+  }
+
   /** Navigate to the search page with the current input value */
   function goToSearch() {
     const term = inputRef?.current?.value;
@@ -69,7 +78,12 @@ export function SearchFormPredictive({
   }
 
   return (
-    <fetcher.Form {...props} className={className} onSubmit={resetInput}>
+    <fetcher.Form
+      {...props}
+      className={className}
+      onSubmit={resetInput}
+      onReset={clearInput}
+    >
       {children({inputRef, fetcher, fetchResults, goToSearch})}
     </fetcher.Form>
   );
