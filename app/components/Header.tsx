@@ -1,6 +1,12 @@
 import {Suspense, useState} from 'react';
 import {Await, NavLink, useAsyncValue} from 'react-router';
-import {CartIcon, SearchIcon, UserIcon, MenuIcon} from '../assets';
+import {
+  ArrowRightIcon,
+  CartIcon,
+  SearchIcon,
+  UserIcon,
+  MenuIcon,
+} from '../assets';
 
 import {
   type CartViewPayload,
@@ -99,13 +105,9 @@ export function HeaderMenu({
   const handleMouseLeave = () => {
     setIsMenuOpen(Array(menu?.items.length).fill(false));
   };
+
   return (
     <nav className={className} role="navigation">
-      {viewport === 'mobile' && (
-        <NavLink end onClick={close} prefetch="intent" to="/">
-          Home
-        </NavLink>
-      )}
       {(menu || FALLBACK_HEADER_MENU).items.map((item, index) => {
         if (!item.url) return null;
 
@@ -117,6 +119,25 @@ export function HeaderMenu({
             ? new URL(item.url).pathname
             : item.url;
 
+        const submenuItems =
+          additionalMenuItems?.filter(
+            (additionalMenuItem) =>
+              additionalMenuItem?.menu_title?.value === item.title,
+          ) || [];
+
+        const headerSubmenuComponent = (
+          <HeaderSubmenu
+            submenu={item.items}
+            primaryDomainUrl={primaryDomainUrl}
+            publicStoreDomain={publicStoreDomain}
+            onMouseEnter={(e) => handleMouseEnter(index)}
+            onMouseLeave={handleMouseLeave}
+            isOpen={isMenuOpen[index]}
+            additionalMenuItems={submenuItems}
+            viewport={viewport}
+          />
+        );
+
         return (
           <div
             className="header-menu-item-container"
@@ -125,29 +146,26 @@ export function HeaderMenu({
             onMouseLeave={handleMouseLeave}
           >
             <div className="header-menu-item">
-              <NavLink
-                className="hover-underline-link"
-                end
-                key={item.id}
-                onClick={close}
-                prefetch="intent"
-                to={url}
-              >
-                {item.title}
-              </NavLink>
-            </div>
-            <HeaderSubmenu
-              submenu={item.items}
-              primaryDomainUrl={primaryDomainUrl}
-              publicStoreDomain={publicStoreDomain}
-              onMouseEnter={(e) => handleMouseEnter(index)}
-              onMouseLeave={handleMouseLeave}
-              isOpen={isMenuOpen[index]}
-              additionalMenuItems={additionalMenuItems?.filter(
-                (additionalMenuItem) =>
-                  additionalMenuItem?.menu_title?.value === item.title,
+              {viewport === 'mobile' && submenuItems.length > 0 ? (
+                <HeaderSubMenuMobileToggle id="submenu" title={item.title} />
+              ) : (
+                <NavLink
+                  className={
+                    viewport === 'desktop' ? 'hover-underline-link' : ''
+                  }
+                  end
+                  key={item.id}
+                  onClick={close}
+                  prefetch="intent"
+                  to={url}
+                >
+                  {item.title}
+                </NavLink>
               )}
-            />
+            </div>
+            {viewport === 'mobile' && submenuItems.length > 0
+              ? headerSubmenuComponent
+              : headerSubmenuComponent}
           </div>
         );
       })}
@@ -163,6 +181,7 @@ function HeaderSubmenu({
   onMouseEnter,
   onMouseLeave,
   additionalMenuItems,
+  viewport,
 }: {
   submenu: ChildMenuItemFragment[];
   primaryDomainUrl: HeaderProps['header']['shop']['primaryDomain']['url'];
@@ -170,6 +189,7 @@ function HeaderSubmenu({
   isOpen: boolean;
   onMouseEnter: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
   onMouseLeave: () => void;
+  viewport: Viewport;
   additionalMenuItems?: MetaobjectConnectionFragment['nodes'];
 }) {
   if (submenu.length === 0 || !isOpen) {
@@ -242,8 +262,8 @@ function HeaderSubmenu({
         <div className="submenu-list">{submenuItems}</div>
       )}
       {additionalMenuItems?.map((additionalMenuItem, amIdx) => {
-        console.log('ADDITIONAL MENU ITEM', additionalMenuItem);
         const menuImage = additionalMenuItem.image?.reference?.image ?? null;
+
         let menuLink = '/';
         if (additionalMenuItem.product?.reference?.handle) {
           menuLink = `/products/${additionalMenuItem.product?.reference?.handle}`;
@@ -305,6 +325,19 @@ function HeaderMenuMobileToggle() {
       onClick={() => open('mobile')}
     >
       <MenuIcon />
+    </button>
+  );
+}
+
+function HeaderSubMenuMobileToggle({id, title}: {id: string; title: string}) {
+  // const {open} = useMenuDrawer();
+  const [open, setOpen] = useState<boolean>(false);
+  return (
+    <button className="mobile-submenu-parent" onClick={() => setOpen(!open)}>
+      <span>{title}</span>
+      <span>
+        <ArrowRightIcon />
+      </span>
     </button>
   );
 }

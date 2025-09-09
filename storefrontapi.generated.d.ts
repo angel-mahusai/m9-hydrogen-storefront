@@ -417,6 +417,86 @@ export type StoreRobotsQueryVariables = StorefrontAPI.Exact<{
 
 export type StoreRobotsQuery = {shop: Pick<StorefrontAPI.Shop, 'id'>};
 
+export type ShopInformationQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type ShopInformationQuery = {
+  shop: {
+    logo_colorful?: StorefrontAPI.Maybe<
+      Pick<StorefrontAPI.Metafield, 'value'> & {
+        reference?: StorefrontAPI.Maybe<{
+          image?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'id' | 'url' | 'height' | 'width' | 'altText'
+            >
+          >;
+        }>;
+      }
+    >;
+    description?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Metafield, 'value'>>;
+  };
+};
+
+export type StorefrontComponentsQueryVariables = StorefrontAPI.Exact<{
+  storefrontComponentType: StorefrontAPI.Scalars['String']['input'];
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type StorefrontComponentsQuery = {
+  metaobjects: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'handle' | 'id'> & {
+        type?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        title?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        subtitle?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        button_label?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        text_position?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        text_color?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        background_color?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        image?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<{
+            image?: StorefrontAPI.Maybe<
+              Pick<
+                StorefrontAPI.Image,
+                'id' | 'url' | 'height' | 'width' | 'altText'
+              >
+            >;
+          }>;
+        }>;
+        product?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Product, 'handle'>
+          >;
+        }>;
+        collection?: StorefrontAPI.Maybe<{
+          reference?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.Collection, 'handle'>
+          >;
+        }>;
+        fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
+      }
+    >;
+  };
+};
+
 export type FeaturedCollectionFragment = Pick<
   StorefrontAPI.Collection,
   'id' | 'title' | 'handle'
@@ -1319,6 +1399,14 @@ interface GeneratedQueryTypes {
   '#graphql\n  query StoreRobots($country: CountryCode, $language: LanguageCode)\n   @inContext(country: $country, language: $language) {\n    shop {\n      id\n    }\n  }\n': {
     return: StoreRobotsQuery;
     variables: StoreRobotsQueryVariables;
+  };
+  '#graphql\n  query ShopInformation(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(language: $language, country: $country) {\n    shop {\n      logo_colorful: metafield(namespace: "custom_shop", key: "logo_colorful") {\n        value\n        reference {\n          ... on MediaImage {\n            image {\n              id\n              url\n              height\n              width\n              altText\n            }\n          }\n        }\n      }\n      description: metafield(namespace: "custom_shop", key: "description") {\n        value\n      }\n    }\n  }\n': {
+    return: ShopInformationQuery;
+    variables: ShopInformationQueryVariables;
+  };
+  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n            }\n          }\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+    return: StorefrontComponentsQuery;
+    variables: StorefrontComponentsQueryVariables;
   };
   '#graphql\n  fragment FeaturedCollection on Collection {\n    id\n    title\n    image {\n      id\n      url\n      altText\n      width\n      height\n    }\n    handle\n  }\n  query FeaturedCollection($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 1, sortKey: UPDATED_AT, reverse: true) {\n      nodes {\n        ...FeaturedCollection\n      }\n    }\n  }\n': {
     return: FeaturedCollectionQuery;
