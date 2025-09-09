@@ -79,7 +79,7 @@ function CartAside({cart}: {cart: PageLayoutProps['cart']}) {
 function SearchAside() {
   const queriesDatalistId = useId();
   return (
-    <Aside type="search" heading="">
+    <Aside type="search" heading="" location="top">
       <div className="predictive-search">
         <SearchFormPredictive>
           {({fetchResults, goToSearch, inputRef}) => (
@@ -171,12 +171,13 @@ function MobileMenuAside({
   return (
     header.menu &&
     header.shop.primaryDomain?.url && (
-      <Aside type="mobile" heading="MENU">
+      <Aside type="mobile" heading="" location="left">
         <HeaderMenu
           menu={header.menu}
           viewport="mobile"
           primaryDomainUrl={header.shop.primaryDomain.url}
           publicStoreDomain={publicStoreDomain}
+          additionalMenuItems={header.metaobjects.nodes}
         />
       </Aside>
     )

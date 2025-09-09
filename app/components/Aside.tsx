@@ -7,7 +7,8 @@ import {
 } from 'react';
 import {XIcon} from '../assets';
 
-type AsideType = 'search' | 'cart' | 'mobile' | 'closed';
+export type AsideType = 'search' | 'cart' | 'mobile' | 'closed' | 'submenu';
+type AsideLocation = 'top' | 'left' | 'right';
 type AsideContextValue = {
   type: AsideType;
   open: (mode: AsideType) => void;
@@ -28,10 +29,12 @@ export function Aside({
   children,
   heading,
   type,
+  location = 'right',
 }: {
   children?: React.ReactNode;
   type: AsideType;
   heading: React.ReactNode;
+  location?: AsideLocation;
 }) {
   const {type: activeType, close} = useAside();
   const expanded = type === activeType;
@@ -56,16 +59,16 @@ export function Aside({
   return (
     <div
       aria-modal
-      className={`overlay overlay--${type} ${expanded ? 'expanded' : ''}`}
+      className={`overlay overlay--${type} overlay--${location} ${expanded ? 'expanded' : ''}`}
       role="dialog"
     >
       <button
-        className={`close-outside close-outside--${type}`}
+        className={`close-outside close-outside--${type} close-outside--${location}`}
         onClick={close}
       />
-      <aside className={`aside--${type}`}>
+      <aside className={`aside--${type} aside--${location}`}>
         <header>
-          <h3>{heading}</h3>
+          {heading && <h3>{heading}</h3>}
           <button className="close reset" onClick={close} aria-label="Close">
             <XIcon />
           </button>
