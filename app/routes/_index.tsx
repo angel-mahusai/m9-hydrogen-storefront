@@ -89,6 +89,7 @@ export default function Homepage() {
       <FeaturedBanner storefrontComponents={data.storefrontComponents} />
       <About shopInformation={data.shopInformation} />
       <TopCategories topCategories={topCategories} />
+      <NewestCreator storefrontComponents={data.storefrontComponents} />
       {/* <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
@@ -216,6 +217,7 @@ function TopCategories({topCategories}: {topCategories: CollFragment[]}) {
             handle: topCategory.handle,
             content: (
               <Carousel slidesToShow={4} infinite={false}>
+              <Carousel slidesToShow={3.5} infinite={false}>
                 {products.map((product) => {
                   return <ProductItem key={product.id} product={product} />;
                 })}
@@ -225,6 +227,49 @@ function TopCategories({topCategories}: {topCategories: CollFragment[]}) {
         })}
         tabHeaderClassName="homepage-section-title"
       />
+    </div>
+  );
+}
+
+function NewestCreator({
+  storefrontComponents,
+}: {
+  storefrontComponents: StorefrontComponentsQuery['metaobjects']['nodes'];
+}) {
+  const newestCreator = storefrontComponents.filter(
+    (item) => item?.type?.value === 'featured_creator',
+  )[0];
+
+  const creator = newestCreator.collection?.reference?.creator?.reference;
+  const image = newestCreator?.image?.reference?.image
+    ? newestCreator?.image?.reference?.image
+    : creator?.image?.reference?.image;
+  return (
+    <div className="image-with-text">
+      <div className="text-wrapper">
+        <span className="caption">{newestCreator?.title?.value}</span>
+        <h1 className="h0">{newestCreator.collection?.reference?.title}</h1>
+        <p className="description">{newestCreator?.subtitle?.value}</p>
+        <NavLink
+          to={`/collections/${newestCreator.collection?.reference?.handle}`}
+          className="button"
+        >
+          {newestCreator?.button_label?.value}
+        </NavLink>
+      </div>
+      <div className="image-wrapper">
+        {image && (
+          <Image
+            alt={
+              image.altText || newestCreator?.title?.value || 'newest creator'
+            }
+            aspectRatio={`${image.width}/${image.height}`}
+            data={image}
+            key={image.id}
+            sizes="(min-width: 45em) 50vw, 100vw"
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -345,6 +390,29 @@ const STOREFRONT_COMPONENTS_QUERY = `#graphql
           reference {
             ... on Collection {
               handle
+              title
+              creator: metafield(namespace: "creator_collection", key: "creator") {
+                reference {
+                  ... on Metaobject {
+                    id
+                    handle
+                    name: field(key: "name") {value}
+                    image: field(key: "image") {
+                      reference {
+                        ... on MediaImage {
+                          image {
+                            id
+                            url
+                            height
+                            width
+                            altText
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }
