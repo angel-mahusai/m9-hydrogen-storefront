@@ -1,4 +1,4 @@
-import React, {Suspense} from 'react';
+import React, {Suspense, useState, useEffect} from 'react';
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {
   Await,
@@ -19,6 +19,7 @@ import {ProductItem} from '~/components/ProductItem';
 import Carousel from '~/components/Carousel';
 import Tabs from '~/components/Tabs';
 import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
+import CreatorItem from '~/components/CreatorItem';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Project Playground | Home'}];
@@ -81,15 +82,38 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
 
+  const [slideCount, setSlideCount] = useState(3.5);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 720) {
+        setSlideCount(1.5);
+      } else if (window.innerWidth < 990) {
+        setSlideCount(2.5);
+      } else {
+        setSlideCount(3.5);
+      }
+    };
+
+    handleResize(); // Set initial screen size
+    window.addEventListener('resize', handleResize);
+  }, []);
+
   const topCategories = data.collections
     .filter((coll: CollFragment) => coll.collection_type?.value === 'category')
     .slice(0, 3);
+
   return (
     <div className="home">
       <FeaturedBanner storefrontComponents={data.storefrontComponents} />
       <About shopInformation={data.shopInformation} />
-      <TopCategories topCategories={topCategories} />
+      <TopCategories topCategories={topCategories} slideCount={slideCount} />
       <NewestCreator storefrontComponents={data.storefrontComponents} />
+      <FeaturedCreators
+        creatorList={['Lagzilla', 'Meeple Maven', 'NoraNova', 'Ogie']}
+        collections={data.collections}
+        slideCount={slideCount}
+      />
       {/* <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
@@ -204,7 +228,13 @@ function About({
   );
 }
 
-function TopCategories({topCategories}: {topCategories: CollFragment[]}) {
+function TopCategories({
+  topCategories,
+  slideCount,
+}: {
+  topCategories: CollFragment[];
+  slideCount: number;
+}) {
   return (
     <div className="top-categories-section">
       <Tabs
@@ -216,8 +246,7 @@ function TopCategories({topCategories}: {topCategories: CollFragment[]}) {
             title: topCategory.title,
             handle: topCategory.handle,
             content: (
-              <Carousel slidesToShow={4} infinite={false}>
-              <Carousel slidesToShow={3.5} infinite={false}>
+              <Carousel slidesToShow={slideCount} infinite={false}>
                 {products.map((product) => {
                   return <ProductItem key={product.id} product={product} />;
                 })}
@@ -245,7 +274,7 @@ function NewestCreator({
     ? newestCreator?.image?.reference?.image
     : creator?.image?.reference?.image;
   return (
-    <div className="image-with-text">
+    <div className="image-with-text background-medium">
       <div className="text-wrapper">
         <span className="caption">{newestCreator?.title?.value}</span>
         <h1 className="h0">{newestCreator.collection?.reference?.title}</h1>
@@ -270,6 +299,33 @@ function NewestCreator({
           />
         )}
       </div>
+    </div>
+  );
+}
+
+function FeaturedCreators({
+  creatorList,
+  collections,
+  slideCount,
+}: {
+  creatorList: string[];
+  collections: CollFragment[];
+  slideCount: number;
+}) {
+  return (
+    <div className="featured-creators-section">
+      <h1 className="homepage-section-title">Featured Creators</h1>
+      <Carousel slidesToShow={slideCount} infinite={false}>
+        {collections
+          .filter((collection) =>
+            creatorList.includes(
+              collection?.creator?.reference?.name?.value || '',
+            ),
+          )
+          .map((collection) => {
+            return <CreatorItem key={collection.id} creator={collection} />;
+          })}
+      </Carousel>
     </div>
   );
 }
@@ -431,6 +487,28 @@ const ALL_COLLECTIONS_QUERY = `#graphql
     id
     title
     handle
+    creator: metafield(namespace: "creator_collection", key: "creator") {
+      reference {
+        ... on Metaobject {
+          id
+          handle
+          name: field(key: "name") {value}
+          image: field(key: "image") {
+            reference {
+              ... on MediaImage {
+                image {
+                  id
+                  url
+                  height
+                  width
+                  altText
+                }
+              }
+            }
+          }
+        }
+      }
+    }
     collection_type: metafield(namespace: "custom", key: "collection_type") {
       value
     }
