@@ -563,7 +563,27 @@ export type StorefrontComponentsQuery = {
         }>;
         collection?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Collection, 'handle'>
+            Pick<StorefrontAPI.Collection, 'handle' | 'title'> & {
+              creator?: StorefrontAPI.Maybe<{
+                reference?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
+                    name?: StorefrontAPI.Maybe<
+                      Pick<StorefrontAPI.MetaobjectField, 'value'>
+                    >;
+                    image?: StorefrontAPI.Maybe<{
+                      reference?: StorefrontAPI.Maybe<{
+                        image?: StorefrontAPI.Maybe<
+                          Pick<
+                            StorefrontAPI.Image,
+                            'id' | 'url' | 'height' | 'width' | 'altText'
+                          >
+                        >;
+                      }>;
+                    }>;
+                  }
+                >;
+              }>;
+            }
           >;
         }>;
         fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
@@ -1620,7 +1640,7 @@ interface GeneratedQueryTypes {
     return: ShopInformationQuery;
     variables: ShopInformationQueryVariables;
   };
-  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n            }\n          }\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n            }\n          }\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n              title\n              creator: metafield(namespace: "creator_collection", key: "creator") {\n                reference {\n                  ... on Metaobject {\n                    id\n                    handle\n                    name: field(key: "name") {value}\n                    image: field(key: "image") {\n                      reference {\n                        ... on MediaImage {\n                          image {\n                            id\n                            url\n                            height\n                            width\n                            altText\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
     return: StorefrontComponentsQuery;
     variables: StorefrontComponentsQueryVariables;
   };
