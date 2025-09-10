@@ -13,6 +13,7 @@
   touch-action: pan-y;
   -webkit-tap-highlight-color: transparent;
   min-height: 100px;
+  max-width: 100vw;
   overflow-x: hidden;
   overflow-y: auto;
 }
@@ -46,7 +47,7 @@
   top: 0;
   left: 0;
   display: block;
-  margin-left: auto;
+  margin-left: 0;
   margin-right: auto;
 }
 .slick-track:before,
@@ -108,7 +109,7 @@
   display: block;
   width: var(--button-size);
   height: var(--button-size);
-  margin: auto;
+  margin: 0;
   text-align: center;
   -webkit-transform: translate(0, -50%);
   -ms-transform: translate(0, -50%);

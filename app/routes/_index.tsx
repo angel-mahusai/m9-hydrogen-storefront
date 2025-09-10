@@ -9,6 +9,7 @@ import {
 } from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
 import type {
+  CollFragment,
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
   ShopInformationQuery,
@@ -16,6 +17,8 @@ import type {
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import Carousel from '~/components/Carousel';
+import Tabs from '~/components/Tabs';
+import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Project Playground | Home'}];
@@ -36,19 +39,23 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [{metaobjects}, {collections}, {shop}] = await Promise.all([
-    context.storefront.query(STOREFRONT_COMPONENTS_QUERY, {
-      variables: {storefrontComponentType: 'storefront_components'},
-    }),
-    // Add other queries here, so that they are loaded in parallel
-    context.storefront.query(FEATURED_COLLECTION_QUERY),
-    context.storefront.query(SHOP_INFORMATION_QUERY),
-  ]);
+  const [storefrontComponents, {collections}, {shop}, allCollections] =
+    await Promise.all([
+      // const [storefrontComponents, {collections}, {shop}] = await Promise.all([
+      context.storefront.query(STOREFRONT_COMPONENTS_QUERY, {
+        variables: {storefrontComponentType: 'storefront_components'},
+      }),
+      // Add other queries here, so that they are loaded in parallel
+      context.storefront.query(FEATURED_COLLECTION_QUERY),
+      context.storefront.query(SHOP_INFORMATION_QUERY),
+      context.storefront.query(ALL_COLLECTIONS_QUERY),
+    ]);
 
   return {
     featuredCollection: collections.nodes[0],
-    storefrontComponents: metaobjects.nodes,
+    storefrontComponents: storefrontComponents.metaobjects.nodes,
     shopInformation: shop,
+    collections: allCollections.collections.nodes,
   };
 }
 
@@ -74,12 +81,16 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
 export default function Homepage() {
   const data = useLoaderData<typeof loader>();
 
+  const topCategories = data.collections
+    .filter((coll: CollFragment) => coll.collection_type?.value === 'category')
+    .slice(0, 3);
   return (
     <div className="home">
       <FeaturedBanner storefrontComponents={data.storefrontComponents} />
       <About shopInformation={data.shopInformation} />
-      <FeaturedCollection collection={data.featuredCollection} />
-      <RecommendedProducts products={data.recommendedProducts} />
+      <TopCategories topCategories={topCategories} />
+      {/* <FeaturedCollection collection={data.featuredCollection} />
+      <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
   );
 }
@@ -188,6 +199,32 @@ function About({
         />
       )}
       <h2>{shopInformation.description?.value}</h2>
+    </div>
+  );
+}
+
+function TopCategories({topCategories}: {topCategories: CollFragment[]}) {
+  return (
+    <div className="top-categories-section">
+      <Tabs
+        title="Shop Our Top Categories"
+        tabs={topCategories.map((topCategory) => {
+          const products = topCategory.products.nodes;
+          return {
+            id: topCategory.id,
+            title: topCategory.title,
+            handle: topCategory.handle,
+            content: (
+              <Carousel slidesToShow={4} infinite={false}>
+                {products.map((product) => {
+                  return <ProductItem key={product.id} product={product} />;
+                })}
+              </Carousel>
+            ),
+          };
+        })}
+        tabHeaderClassName="homepage-section-title"
+      />
     </div>
   );
 }
@@ -315,6 +352,31 @@ const STOREFRONT_COMPONENTS_QUERY = `#graphql
           key
           value
         }
+      }
+    }
+  }
+` as const;
+
+const ALL_COLLECTIONS_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  fragment Coll on Collection {
+    id
+    title
+    handle
+    collection_type: metafield(namespace: "custom", key: "collection_type") {
+      value
+    }
+    products(first: 8) {
+      nodes {
+        ...ProductItem
+      }
+    }
+  }
+  query AllCollections($country: CountryCode, $language: LanguageCode)
+    @inContext(country: $country, language: $language) {
+    collections(first: 100) {
+      nodes {
+        ...Coll
       }
     }
   }

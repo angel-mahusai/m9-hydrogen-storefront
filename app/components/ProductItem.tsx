@@ -1,11 +1,14 @@
-import {Link} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import {Image, Money} from '@shopify/hydrogen';
+import {AddToCartButton} from './AddToCartButton';
 import type {
   ProductItemFragment,
   CollectionItemFragment,
   RecommendedProductFragment,
 } from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
+import {useAside} from './Aside';
+import {ProductPrice} from './ProductPrice';
 
 export function ProductItem({
   product,
@@ -17,28 +20,59 @@ export function ProductItem({
     | RecommendedProductFragment;
   loading?: 'eager' | 'lazy';
 }) {
+  const {open} = useAside();
+  console.log(product);
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
+  const selectedVariant = product.selectedOrFirstAvailableVariant;
   return (
-    <Link
-      className="product-item"
-      key={product.id}
-      prefetch="intent"
-      to={variantUrl}
-    >
-      {image && (
-        <Image
-          alt={image.altText || product.title}
-          aspectRatio="1/1"
-          data={image}
-          loading={loading}
-          sizes="(min-width: 45em) 400px, 100vw"
-        />
-      )}
-      <h4>{product.title}</h4>
-      <small>
-        <Money data={product.priceRange.minVariantPrice} />
-      </small>
-    </Link>
+    <div className="product-item" key={product.id}>
+      <div className="product-image-wrapper">
+        {image && (
+          <Link prefetch="intent" to={variantUrl}>
+            <Image
+              alt={image.altText || product.title}
+              aspectRatio="4/5"
+              data={image}
+              loading={loading}
+              sizes="(min-width: 45em) 400px, 100vw"
+            />
+          </Link>
+        )}
+        <div className="quick-add-button">
+          <AddToCartButton
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            onClick={() => {
+              open('cart');
+            }}
+            lines={
+              selectedVariant
+                ? [
+                    {
+                      merchandiseId: selectedVariant.id,
+                      quantity: 1,
+                      selectedVariant,
+                    },
+                  ]
+                : []
+            }
+          >
+            {selectedVariant?.availableForSale ? 'Quick Add' : 'Sold out'}
+          </AddToCartButton>
+        </div>
+      </div>
+      <Link className="product-content" prefetch="intent" to={variantUrl}>
+        <h4>{product.title}</h4>
+        {product.creator && (
+          <small>{product.creator.reference.name.value}</small>
+        )}
+        <small>
+          <ProductPrice
+            price={selectedVariant?.price}
+            compareAtPrice={selectedVariant?.compareAtPrice}
+          />
+        </small>
+      </Link>
+    </div>
   );
 }
