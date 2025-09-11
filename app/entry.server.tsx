@@ -17,6 +17,7 @@ export default async function handleRequest(
       checkoutDomain: context.env.PUBLIC_CHECKOUT_DOMAIN,
       storeDomain: context.env.PUBLIC_STORE_DOMAIN,
     },
+    mediaSrc: [context.env.PUBLIC_STORE_DOMAIN],
     fontSrc: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
     styleSrc: ['https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
   });

@@ -558,9 +558,79 @@ export type StorefrontComponentsQuery = {
         }>;
         product?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Product, 'handle'>
+            Pick<StorefrontAPI.Product, 'handle' | 'title'> & {
+              media: {
+                nodes: Array<
+                  | (Pick<
+                      StorefrontAPI.ExternalVideo,
+                      'alt' | 'id' | 'mediaContentType'
+                    > & {
+                      presentation?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.MediaPresentation, 'id'>
+                      >;
+                      previewImage?: StorefrontAPI.Maybe<
+                        Pick<
+                          StorefrontAPI.Image,
+                          'altText' | 'url' | 'width' | 'height' | 'id'
+                        >
+                      >;
+                    })
+                  | (Pick<
+                      StorefrontAPI.MediaImage,
+                      'alt' | 'id' | 'mediaContentType'
+                    > & {
+                      presentation?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.MediaPresentation, 'id'>
+                      >;
+                      previewImage?: StorefrontAPI.Maybe<
+                        Pick<
+                          StorefrontAPI.Image,
+                          'altText' | 'url' | 'width' | 'height' | 'id'
+                        >
+                      >;
+                    })
+                  | (Pick<
+                      StorefrontAPI.Model3d,
+                      'alt' | 'id' | 'mediaContentType'
+                    > & {
+                      presentation?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.MediaPresentation, 'id'>
+                      >;
+                      previewImage?: StorefrontAPI.Maybe<
+                        Pick<
+                          StorefrontAPI.Image,
+                          'altText' | 'url' | 'width' | 'height' | 'id'
+                        >
+                      >;
+                    })
+                  | (Pick<
+                      StorefrontAPI.Video,
+                      'alt' | 'id' | 'mediaContentType'
+                    > & {
+                      sources: Array<
+                        Pick<
+                          StorefrontAPI.VideoSource,
+                          'format' | 'height' | 'width' | 'mimeType' | 'url'
+                        >
+                      >;
+                      presentation?: StorefrontAPI.Maybe<
+                        Pick<StorefrontAPI.MediaPresentation, 'id'>
+                      >;
+                      previewImage?: StorefrontAPI.Maybe<
+                        Pick<
+                          StorefrontAPI.Image,
+                          'altText' | 'url' | 'width' | 'height' | 'id'
+                        >
+                      >;
+                    })
+                >;
+              };
+            }
           >;
         }>;
+        product_media_index?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
         collection?: StorefrontAPI.Maybe<{
           reference?: StorefrontAPI.Maybe<
             Pick<StorefrontAPI.Collection, 'handle' | 'title'> & {
@@ -1678,7 +1748,7 @@ interface GeneratedQueryTypes {
     return: ShopInformationQuery;
     variables: ShopInformationQueryVariables;
   };
-  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n            }\n          }\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n              title\n              creator: metafield(namespace: "creator_collection", key: "creator") {\n                reference {\n                  ... on Metaobject {\n                    id\n                    handle\n                    name: field(key: "name") {value}\n                    image: field(key: "image") {\n                      reference {\n                        ... on MediaImage {\n                          image {\n                            id\n                            url\n                            height\n                            width\n                            altText\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n              title\n              media(first: 5) {\n                nodes {\n                  alt\n                  id\n                  mediaContentType\n                  presentation {\n                    id\n                  }\n                  previewImage {\n                    altText\n                    url\n                    width\n                    height\n                    id\n                  }\n                  ... on Video {\n                    sources {\n                      format\n                      height\n                      width\n                      mimeType\n                      url\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        product_media_index: field(key: "product_media_index") {\n          value\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n              title\n              creator: metafield(namespace: "creator_collection", key: "creator") {\n                reference {\n                  ... on Metaobject {\n                    id\n                    handle\n                    name: field(key: "name") {value}\n                    image: field(key: "image") {\n                      reference {\n                        ... on MediaImage {\n                          image {\n                            id\n                            url\n                            height\n                            width\n                            altText\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
     return: StorefrontComponentsQuery;
     variables: StorefrontComponentsQueryVariables;
   };
