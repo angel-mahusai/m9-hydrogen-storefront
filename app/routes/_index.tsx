@@ -7,7 +7,7 @@ import {
   type MetaFunction,
   NavLink,
 } from 'react-router';
-import {Image, Money} from '@shopify/hydrogen';
+import {Image, Money, Video} from '@shopify/hydrogen';
 import type {
   CollFragment,
   FeaturedCollectionFragment,
@@ -42,7 +42,6 @@ export async function loader(args: LoaderFunctionArgs) {
 async function loadCriticalData({context}: LoaderFunctionArgs) {
   const [storefrontComponents, {collections}, {shop}, allCollections] =
     await Promise.all([
-      // const [storefrontComponents, {collections}, {shop}] = await Promise.all([
       context.storefront.query(STOREFRONT_COMPONENTS_QUERY, {
         variables: {storefrontComponentType: 'storefront_components'},
       }),
@@ -114,6 +113,7 @@ export default function Homepage() {
         collections={data.collections}
         slideCount={slideCount}
       />
+      <FeaturedItems storefrontComponents={data.storefrontComponents} />
       {/* <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
@@ -330,6 +330,96 @@ function FeaturedCreators({
   );
 }
 
+function FeaturedItems({
+  storefrontComponents,
+}: {
+  storefrontComponents: StorefrontComponentsQuery['metaobjects']['nodes'];
+}) {
+  const featuredItems = storefrontComponents.filter(
+    (item) => item?.type?.value === 'featured_items',
+  );
+  return (
+    <div className="featured-items-section">
+      <span className="caption">Featured Items</span>
+      <h1>You dont want to miss these!</h1>
+      <div className="featured-items-grid">
+        {featuredItems.map((item) => {
+          if (!item) return null;
+
+          const product = item.product?.reference;
+
+          const productMediaIndex = parseInt(
+            item.product_media_index?.value || '0',
+          );
+          const productMedia =
+            (product?.media.nodes.length &&
+              (product?.media.nodes.length > productMediaIndex
+                ? product?.media.nodes[productMediaIndex]
+                : product?.media.nodes[0])) ||
+            null;
+
+          const mediaType = item.image?.reference?.image
+            ? 'IMAGE'
+            : productMedia?.mediaContentType;
+
+          const displayImage =
+            item.image?.reference?.image || productMedia?.previewImage;
+
+          const title = product?.title || item.title?.value;
+
+          return (
+            <div className="featured-item" key={item.id}>
+              {mediaType === 'VIDEO' ? (
+                productMedia && (
+                  <div className="featured-item-media">
+                    <Video
+                      data={productMedia}
+                      playsInline
+                      autoPlay
+                      loop
+                      muted
+                      preload="metadata"
+                      controls={false}
+                    />
+                  </div>
+                )
+              ) : mediaType === 'IMAGE' ? (
+                displayImage && (
+                  <div className="featured-item-media">
+                    <Image
+                      alt={title || 'featured item'}
+                      aspectRatio={`${displayImage.width}/${displayImage.height}`}
+                      data={displayImage}
+                      key={displayImage.id}
+                      sizes="(min-width: 45em) 50vw, 100vw"
+                    />
+                  </div>
+                )
+              ) : (
+                <></>
+              )}
+              <div className="featured-item-content">
+                <div>
+                  <h2>{title}</h2>
+                  <p>{item.subtitle?.value}</p>
+                  <NavLink
+                    to={`/collections/${item.collection?.reference?.handle}`}
+                    className="initial-underline-link"
+                  >
+                    {item?.button_label?.value
+                      ? item?.button_label?.value
+                      : 'Shop Now'}
+                  </NavLink>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function FeaturedCollection({
   collection,
 }: {
@@ -439,8 +529,38 @@ const STOREFRONT_COMPONENTS_QUERY = `#graphql
           reference {
             ... on Product {
               handle
+              title
+              media(first: 5) {
+                nodes {
+                  alt
+                  id
+                  mediaContentType
+                  presentation {
+                    id
+                  }
+                  previewImage {
+                    altText
+                    url
+                    width
+                    height
+                    id
+                  }
+                  ... on Video {
+                    sources {
+                      format
+                      height
+                      width
+                      mimeType
+                      url
+                    }
+                  }
+                }
+              }
             }
           }
+        }
+        product_media_index: field(key: "product_media_index") {
+          value
         }
         collection: field(key: "collection") {
           reference {
