@@ -784,6 +784,74 @@ button.reset:hover:not(:has(> *)) {
 
 /*
 * --------------------------------------------------
+* components/ImageWithText
+* --------------------------------------------------
+*/
+.image-with-text {
+  display: grid;
+  @media (min-width: 45em) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.image-with-text .text-wrapper {
+  flex-basis: 84%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--padding-inner);
+  padding: var(--padding-outer);
+  margin: 0 auto;
+  max-width: 100%;
+  grid-row: 2;
+  @media (min-width: 45em) {
+    max-width: 90%;
+    padding: calc(var(--padding-outer) * 2);
+    grid-row: 1;
+  }
+  @media (min-width: 90em) {
+    max-width: 80%;
+  }
+}
+
+.image-with-text.reverse .text-wrapper {
+  @media (min-width: 45em) {
+    grid-column: 2;
+  }
+}
+
+.image-with-text.reverse .image-wrapper {
+  @media (min-width: 45em) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+.image-with-text .text-wrapper .h0 {
+  font-size: 4.0rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.image-with-text .text-wrapper .description {
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-bottom: var(--padding-inner)
+}
+
+.image-with-text .image-wrapper {
+  height: 100%;
+}
+
+.image-with-text .image-wrapper img {
+  height: auto;
+  min-height: 100%;
+  min-width: 100%;
+  object-fit: cover;
+}
+
+/*
+* --------------------------------------------------
 * components/Search
 * --------------------------------------------------
 */
@@ -1016,55 +1084,6 @@ button.reset:hover:not(:has(> *)) {
 .top-categories-section .slick-slider:hover .slick-next,
 .top-categories-section .slick-next:hover {
   right: 0;
-}
-
-
-.image-with-text {
-  display: grid;
-  @media (min-width: 45em) {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.image-with-text .text-wrapper {
-  flex-basis: 84%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--padding-inner);
-  padding: var(--padding-outer);
-  margin: 0 auto;
-  max-width: 100%;
-  @media (min-width: 45em) {
-    max-width: 90%;
-    padding: calc(var(--padding-outer) * 2);
-  }
-  @media (min-width: 90em) {
-    max-width: 80%;
-  }
-}
-
-.image-with-text .text-wrapper .h0 {
-  font-size: 4.0rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.image-with-text .text-wrapper .description {
-  font-size: 1.2rem;
-  font-weight: 400;
-  margin-bottom: var(--padding-inner)
-}
-
-.image-with-text .image-wrapper {
-  height: 100%;
-}
-
-.image-with-text .image-wrapper img {
-  height: auto;
-  min-height: 100%;
-  min-width: 100%;
-  object-fit: cover;
 }
 
 .featured-creators-section {
