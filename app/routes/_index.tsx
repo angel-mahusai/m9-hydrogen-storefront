@@ -20,6 +20,7 @@ import Carousel from '~/components/Carousel';
 import Tabs from '~/components/Tabs';
 import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
 import CreatorItem from '~/components/CreatorItem';
+import ImageWithText from '~/components/ImageWithText';
 
 export const meta: MetaFunction = () => {
   return [{title: 'Project Playground | Home'}];
@@ -102,18 +103,37 @@ export default function Homepage() {
     .filter((coll: CollFragment) => coll.collection_type?.value === 'category')
     .slice(0, 3);
 
+  function groupBy(arr: any[], property: string, subproperty?: string) {
+    return arr.reduce(function (memo, x) {
+      const y = subproperty ? x[property][subproperty] : x[property];
+
+      if (!memo[y]) {
+        memo[y] = [];
+      }
+      memo[y].push(x);
+      return memo;
+    }, {});
+  }
+  const storefrontComponents = groupBy(
+    data.storefrontComponents,
+    'type',
+    'value',
+  );
+
   return (
     <div className="home">
-      <FeaturedBanner storefrontComponents={data.storefrontComponents} />
+      <FeaturedBanner
+        featuredBannerItems={storefrontComponents.featured_banner}
+      />
       <About shopInformation={data.shopInformation} />
       <TopCategories topCategories={topCategories} slideCount={slideCount} />
-      <NewestCreator storefrontComponents={data.storefrontComponents} />
+      <NewestCreator featuredCreator={storefrontComponents.featured_creator} />
       <FeaturedCreators
         creatorList={['Lagzilla', 'Meeple Maven', 'NoraNova', 'Ogie']}
         collections={data.collections}
         slideCount={slideCount}
       />
-      <FeaturedItems storefrontComponents={data.storefrontComponents} />
+      <FeaturedItems featuredItems={storefrontComponents.featured_items} />
       {/* <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
@@ -121,14 +141,10 @@ export default function Homepage() {
 }
 
 function FeaturedBanner({
-  storefrontComponents,
+  featuredBannerItems,
 }: {
-  storefrontComponents: StorefrontComponentsQuery['metaobjects']['nodes'];
+  featuredBannerItems: StorefrontComponentsQuery['metaobjects']['nodes'];
 }) {
-  const featuredBannerItems = storefrontComponents.filter(
-    (item) => item?.type?.value === 'featured_banner',
-  );
-
   return (
     <Carousel>
       {featuredBannerItems.map((item) => {
@@ -261,45 +277,32 @@ function TopCategories({
 }
 
 function NewestCreator({
-  storefrontComponents,
+  featuredCreator,
 }: {
-  storefrontComponents: StorefrontComponentsQuery['metaobjects']['nodes'];
+  featuredCreator: StorefrontComponentsQuery['metaobjects']['nodes'];
 }) {
-  const newestCreator = storefrontComponents.filter(
-    (item) => item?.type?.value === 'featured_creator',
-  )[0];
+  const newestCreator = featuredCreator[0];
 
   const creator = newestCreator.collection?.reference?.creator?.reference;
   const image = newestCreator?.image?.reference?.image
     ? newestCreator?.image?.reference?.image
     : creator?.image?.reference?.image;
   return (
-    <div className="image-with-text background-medium">
-      <div className="text-wrapper">
-        <span className="caption">{newestCreator?.title?.value}</span>
-        <h1 className="h0">{newestCreator.collection?.reference?.title}</h1>
-        <p className="description">{newestCreator?.subtitle?.value}</p>
-        <NavLink
-          to={`/collections/${newestCreator.collection?.reference?.handle}`}
-          className="button"
-        >
-          {newestCreator?.button_label?.value}
-        </NavLink>
-      </div>
-      <div className="image-wrapper">
-        {image && (
-          <Image
-            alt={
-              image.altText || newestCreator?.title?.value || 'newest creator'
-            }
-            aspectRatio={`${image.width}/${image.height}`}
-            data={image}
-            key={image.id}
-            sizes="(min-width: 45em) 50vw, 100vw"
-          />
-        )}
-      </div>
-    </div>
+    <ImageWithText
+      image={image}
+      containerClassName="background-medium"
+      textFirst={false}
+    >
+      <span className="caption">{newestCreator?.title?.value}</span>
+      <h1 className="h0">{newestCreator.collection?.reference?.title}</h1>
+      <p className="description">{newestCreator?.subtitle?.value}</p>
+      <NavLink
+        to={`/collections/${newestCreator.collection?.reference?.handle}`}
+        className="button"
+      >
+        {newestCreator?.button_label?.value}
+      </NavLink>
+    </ImageWithText>
   );
 }
 
@@ -331,13 +334,10 @@ function FeaturedCreators({
 }
 
 function FeaturedItems({
-  storefrontComponents,
+  featuredItems,
 }: {
-  storefrontComponents: StorefrontComponentsQuery['metaobjects']['nodes'];
+  featuredItems: StorefrontComponentsQuery['metaobjects']['nodes'];
 }) {
-  const featuredItems = storefrontComponents.filter(
-    (item) => item?.type?.value === 'featured_items',
-  );
   return (
     <div className="featured-items-section">
       <span className="caption">Featured Items</span>

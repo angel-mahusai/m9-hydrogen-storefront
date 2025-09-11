@@ -21,7 +21,6 @@ export function ProductItem({
   loading?: 'eager' | 'lazy';
 }) {
   const {open} = useAside();
-  console.log(product);
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
   const selectedVariant = product.selectedOrFirstAvailableVariant;
