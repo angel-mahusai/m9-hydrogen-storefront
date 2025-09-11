@@ -14,6 +14,7 @@ import type {
   RecommendedProductsQuery,
   ShopInformationQuery,
   StorefrontComponentsQuery,
+  TestimonialFragment,
 } from 'storefrontapi.generated';
 import {ProductItem} from '~/components/ProductItem';
 import Carousel from '~/components/Carousel';
@@ -41,22 +42,29 @@ export async function loader(args: LoaderFunctionArgs) {
  * needed to render the page. If it's unavailable, the whole page should 400 or 500 error.
  */
 async function loadCriticalData({context}: LoaderFunctionArgs) {
-  const [storefrontComponents, {collections}, {shop}, allCollections] =
-    await Promise.all([
-      context.storefront.query(STOREFRONT_COMPONENTS_QUERY, {
-        variables: {storefrontComponentType: 'storefront_components'},
-      }),
-      // Add other queries here, so that they are loaded in parallel
-      context.storefront.query(FEATURED_COLLECTION_QUERY),
-      context.storefront.query(SHOP_INFORMATION_QUERY),
-      context.storefront.query(ALL_COLLECTIONS_QUERY),
-    ]);
+  const [
+    storefrontComponents,
+    {collections},
+    {shop},
+    allCollections,
+    testimonials,
+  ] = await Promise.all([
+    context.storefront.query(STOREFRONT_COMPONENTS_QUERY, {
+      variables: {storefrontComponentType: 'storefront_components'},
+    }),
+    // Add other queries here, so that they are loaded in parallel
+    context.storefront.query(FEATURED_COLLECTION_QUERY),
+    context.storefront.query(SHOP_INFORMATION_QUERY),
+    context.storefront.query(ALL_COLLECTIONS_QUERY),
+    context.storefront.query(TESTIMONIALS_QUERY),
+  ]);
 
   return {
     featuredCollection: collections.nodes[0],
     storefrontComponents: storefrontComponents.metaobjects.nodes,
     shopInformation: shop,
     collections: allCollections.collections.nodes,
+    testimonials: testimonials.metaobjects.nodes,
   };
 }
 
@@ -134,6 +142,10 @@ export default function Homepage() {
         slideCount={slideCount}
       />
       <FeaturedItems featuredItems={storefrontComponents.featured_items} />
+      <Testimonials
+        testimonials={data.testimonials}
+        slideCount={slideCount - 0.5}
+      />
       {/* <FeaturedCollection collection={data.featuredCollection} />
       <RecommendedProducts products={data.recommendedProducts} /> */}
     </div>
@@ -420,6 +432,39 @@ function FeaturedItems({
   );
 }
 
+function Testimonials({
+  testimonials,
+  slideCount,
+}: {
+  testimonials: TestimonialFragment[];
+  slideCount: number;
+}) {
+  return (
+    <div className="testimonials-section">
+      <h1 className="homepage-section-title">Testimonials</h1>
+      <Carousel slidesToShow={slideCount} infinite={false}>
+        {testimonials.map((testimonial) => {
+          return (
+            <div key={testimonial.handle} className="testimonial-wrapper">
+              <div className="testimonial-item">
+                <span className="quotation-mark">“</span>
+                <h3>{testimonial.testimonial?.value}</h3>
+                <div>
+                  <p>{testimonial.customer_name?.value}</p>
+                  <span className="caption">
+                    {testimonial.customer_info?.value || 'Verified Customer'}
+                  </span>
+                </div>
+                <span className="quotation-mark">„</span>
+              </div>
+            </div>
+          );
+        })}
+      </Carousel>
+    </div>
+  );
+}
+
 function FeaturedCollection({
   collection,
 }: {
@@ -501,7 +546,7 @@ const STOREFRONT_COMPONENTS_QUERY = `#graphql
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(country: $country, language: $language) {
-    metaobjects(type: $storefrontComponentType, first: 10) {
+    metaobjects(type: $storefrontComponentType, first: 20) {
       nodes {
         handle
         id
@@ -592,10 +637,26 @@ const STOREFRONT_COMPONENTS_QUERY = `#graphql
             }
           }
         }
-        fields {
-          key
-          value
-        }
+      }
+    }
+  }
+` as const;
+
+const TESTIMONIALS_QUERY = `#graphql
+  fragment Testimonial on Metaobject {
+    id
+    handle
+    customer_name: field(key: "customer_name") {value}
+    customer_info: field(key: "customer_info") {value}
+    testimonial: field(key: "testimonial") {value}
+  }
+  query Testimonials(
+    $country: CountryCode
+    $language: LanguageCode
+  ) @inContext(country: $country, language: $language) {
+    metaobjects(type: "testimonials", first: 10) {
+      nodes {
+      ...Testimonial
       }
     }
   }

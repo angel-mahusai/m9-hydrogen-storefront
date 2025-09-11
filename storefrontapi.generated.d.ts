@@ -656,7 +656,44 @@ export type StorefrontComponentsQuery = {
             }
           >;
         }>;
-        fields: Array<Pick<StorefrontAPI.MetaobjectField, 'key' | 'value'>>;
+      }
+    >;
+  };
+};
+
+export type TestimonialFragment = Pick<
+  StorefrontAPI.Metaobject,
+  'id' | 'handle'
+> & {
+  customer_name?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  customer_info?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+  testimonial?: StorefrontAPI.Maybe<
+    Pick<StorefrontAPI.MetaobjectField, 'value'>
+  >;
+};
+
+export type TestimonialsQueryVariables = StorefrontAPI.Exact<{
+  country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
+  language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+}>;
+
+export type TestimonialsQuery = {
+  metaobjects: {
+    nodes: Array<
+      Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
+        customer_name?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        customer_info?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
+        testimonial?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.MetaobjectField, 'value'>
+        >;
       }
     >;
   };
@@ -1748,9 +1785,13 @@ interface GeneratedQueryTypes {
     return: ShopInformationQuery;
     variables: ShopInformationQueryVariables;
   };
-  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 10) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n              title\n              media(first: 5) {\n                nodes {\n                  alt\n                  id\n                  mediaContentType\n                  presentation {\n                    id\n                  }\n                  previewImage {\n                    altText\n                    url\n                    width\n                    height\n                    id\n                  }\n                  ... on Video {\n                    sources {\n                      format\n                      height\n                      width\n                      mimeType\n                      url\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        product_media_index: field(key: "product_media_index") {\n          value\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n              title\n              creator: metafield(namespace: "creator_collection", key: "creator") {\n                reference {\n                  ... on Metaobject {\n                    id\n                    handle\n                    name: field(key: "name") {value}\n                    image: field(key: "image") {\n                      reference {\n                        ... on MediaImage {\n                          image {\n                            id\n                            url\n                            height\n                            width\n                            altText\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        fields {\n          key\n          value\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  query StorefrontComponents(\n    $storefrontComponentType: String!\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: $storefrontComponentType, first: 20) {\n      nodes {\n        handle\n        id\n        type: field(key: "type") {value}\n        title: field(key: "title") {value}\n        subtitle: field(key: "subtitle") {value}\n        button_label: field(key: "button_label") {value}\n        text_position: field(key: "text_position") {value}\n        text_color: field(key: "text_color") {value}\n        background_color: field(key: "background_color") {value}\n        image: field(key: "image") {\n          reference {\n            ... on MediaImage {\n              image {\n                id\n                url\n                height\n                width\n                altText\n              }\n            }\n          }\n        }\n        product: field(key: "product") {\n          reference {\n            ... on Product {\n              handle\n              title\n              media(first: 5) {\n                nodes {\n                  alt\n                  id\n                  mediaContentType\n                  presentation {\n                    id\n                  }\n                  previewImage {\n                    altText\n                    url\n                    width\n                    height\n                    id\n                  }\n                  ... on Video {\n                    sources {\n                      format\n                      height\n                      width\n                      mimeType\n                      url\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n        product_media_index: field(key: "product_media_index") {\n          value\n        }\n        collection: field(key: "collection") {\n          reference {\n            ... on Collection {\n              handle\n              title\n              creator: metafield(namespace: "creator_collection", key: "creator") {\n                reference {\n                  ... on Metaobject {\n                    id\n                    handle\n                    name: field(key: "name") {value}\n                    image: field(key: "image") {\n                      reference {\n                        ... on MediaImage {\n                          image {\n                            id\n                            url\n                            height\n                            width\n                            altText\n                          }\n                        }\n                      }\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n': {
     return: StorefrontComponentsQuery;
     variables: StorefrontComponentsQueryVariables;
+  };
+  '#graphql\n  fragment Testimonial on Metaobject {\n    id\n    handle\n    customer_name: field(key: "customer_name") {value}\n    customer_info: field(key: "customer_info") {value}\n    testimonial: field(key: "testimonial") {value}\n  }\n  query Testimonials(\n    $country: CountryCode\n    $language: LanguageCode\n  ) @inContext(country: $country, language: $language) {\n    metaobjects(type: "testimonial", first: 10) {\n      nodes {\n      ...Testimonial\n      }\n    }\n  }\n': {
+    return: TestimonialsQuery;
+    variables: TestimonialsQueryVariables;
   };
   '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    selectedOrFirstAvailableVariant {\n      ...ProductVariant\n    }\n    variantsCount {\n      count\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n  fragment Coll on Collection {\n    id\n    title\n    handle\n    creator: metafield(namespace: "creator_collection", key: "creator") {\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n          image: field(key: "image") {\n            reference {\n              ... on MediaImage {\n                image {\n                  id\n                  url\n                  height\n                  width\n                  altText\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n    collection_type: metafield(namespace: "custom", key: "collection_type") {\n      value\n    }\n    products(first: 8) {\n      nodes {\n        ...ProductItem\n      }\n    }\n  }\n  query AllCollections($country: CountryCode, $language: LanguageCode)\n    @inContext(country: $country, language: $language) {\n    collections(first: 100) {\n      nodes {\n        ...Coll\n      }\n    }\n  }\n': {
     return: AllCollectionsQuery;
