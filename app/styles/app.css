@@ -90,6 +90,7 @@
 }
 
 .header-menu-item:hover .hover-underline-link,
+.collection-item:hover .hover-underline-link,
 .hover-underline-link:hover {
   background-size: 100% 1px;
 }
@@ -1406,15 +1407,62 @@ button.reset:hover:not(:has(> *)) {
 * routes/collections._index.tsx
 * --------------------------------------------------
 */
+main:has(.collections) {
+  background-color: var(--color-background-light);
+}
+
+.collections h1 {
+  text-align: center;
+  width: 100%;
+}
+
 .collections-grid {
   display: grid;
-  grid-gap: 1.5rem;
-  grid-template-columns: repeat(auto-fit, minmax(var(--grid-item-width), 1fr));
+  grid-gap: var(--padding-inner);
+  grid-template-columns: repeat(2, 1fr);
   margin-bottom: 2rem;
+  padding: 0 var(--padding-inner);
+  @media (min-width: 45em) {
+    grid-template-columns: repeat(4, 1fr);
+    padding: 0 var(--padding-outer);
+  }
+}
+
+.collection-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(var(--color-secondary-text), 0.15);
+  overflow: hidden;
+}
+
+.collection-image-container {
+  width: 100%;
+  overflow: hidden;
 }
 
 .collection-item img {
   height: auto;
+  transition: transform 0.25s ease-in-out;
+}
+
+
+.collection-item:hover img,
+.collection-item img:hover {
+  transform: scale(1.1);
+}
+
+.collection-name-container {
+  padding: 12px;
+  margin: 0;
+   @media (min-width: 45em) {
+    padding: 20px;
+   }
+}
+
+.collection-name-container h5 {
+  margin: 0;
 }
 
 /*
