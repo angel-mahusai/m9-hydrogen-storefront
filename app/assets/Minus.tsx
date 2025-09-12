@@ -9,7 +9,7 @@ const SvgMinus = (props: SVGProps<SVGSVGElement>) => (
     stroke="currentColor"
     strokeLinecap="round"
     strokeLinejoin="round"
-    strokeWidth={1}
+    strokeWidth={2}
     className="minus_svg__feather minus_svg__feather-minus"
     {...props}
   >

@@ -5,6 +5,7 @@ import type {
   FooterQuery,
   HeaderQuery,
 } from 'storefrontapi.generated';
+import type {ShopInformationQuery} from 'types/admin.generated';
 import {SearchIcon} from '../assets';
 import {Aside} from '~/components/Aside';
 import {Footer} from '~/components/Footer';
@@ -16,10 +17,10 @@ import {
 } from '~/components/SearchFormPredictive';
 import {SearchResultsPredictive} from '~/components/SearchResultsPredictive';
 import {AnnouncementBar} from './AnnouncementBar';
-
 interface PageLayoutProps {
   cart: Promise<CartApiQueryFragment | null>;
   footer: Promise<FooterQuery | null>;
+  shopInformation: ShopInformationQuery | undefined;
   header: HeaderQuery;
   isLoggedIn: Promise<boolean>;
   publicStoreDomain: string;
@@ -30,6 +31,7 @@ export function PageLayout({
   cart,
   children = null,
   footer,
+  shopInformation,
   header,
   isLoggedIn,
   publicStoreDomain,
@@ -55,6 +57,7 @@ export function PageLayout({
       <main>{children}</main>
       <Footer
         footer={footer}
+        shopInformation={shopInformation}
         header={header}
         publicStoreDomain={publicStoreDomain}
       />

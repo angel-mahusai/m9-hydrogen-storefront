@@ -18,6 +18,7 @@ import appStyles from '~/styles/app.css?url';
 import sliderStyles from '~/styles/slick.css?url';
 import tailwindCss from './styles/tailwind.css?url';
 import {PageLayout} from './components/PageLayout';
+import {SHOP_INFORMATION_QUERY} from './graphql/admin/ShopInformationQuery';
 
 export type RootLoader = typeof loader;
 
@@ -123,7 +124,11 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {header};
+  const shopInformation = await Promise.all([
+    context.adminClient.request(SHOP_INFORMATION_QUERY),
+  ]);
+
+  return {header, shopInformation: shopInformation[0].data};
 }
 
 /**
@@ -132,14 +137,14 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
-  const {storefront, customerAccount, cart} = context;
+  const {storefront, customerAccount, cart, adminClient} = context;
 
   // defer the footer query (below the fold)
   const footer = storefront
     .query(FOOTER_QUERY, {
       cache: storefront.CacheLong(),
       variables: {
-        footerMenuHandle: 'footer', // Adjust to your footer menu handle
+        footerMenuHandle: 'footer-menu', // Adjust to your footer menu handle
       },
     })
     .catch((error) => {
