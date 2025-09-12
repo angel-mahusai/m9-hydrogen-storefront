@@ -10,11 +10,13 @@
     "preview": "shopify hydrogen preview --build",
     "lint": "eslint --no-error-on-unmatched-pattern .",
     "typecheck": "tsc --noEmit",
-    "codegen": "shopify hydrogen codegen"
+    "codegen": "graphql-codegen --config codegen.ts",
+    "graphql-codegen": "graphql-codegen"
   },
   "prettier": "@shopify/prettier-config",
   "dependencies": {
     "@ant-design/react-slick": "^1.1.2",
+    "@shopify/admin-api-client": "^1.1.1",
     "@shopify/hydrogen": "2025.5.0",
     "@shopify/remix-oxygen": "^3.0.0",
     "graphql": "^16.10.0",
@@ -31,9 +33,10 @@
     "@eslint/compat": "^1.2.5",
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
-    "@graphql-codegen/cli": "5.0.2",
+    "@graphql-codegen/cli": "6.0.0",
     "@react-router/dev": "7.6.0",
     "@react-router/fs-routes": "7.6.0",
+    "@shopify/api-codegen-preset": "^1.1.9",
     "@shopify/cli": "~3.80.4",
     "@shopify/hydrogen-codegen": "^0.3.3",
     "@shopify/mini-oxygen": "^3.2.1",
@@ -60,7 +63,8 @@
     "prettier": "^3.4.2",
     "typescript": "^5.2.2",
     "vite": "^6.2.4",
-    "vite-tsconfig-paths": "^4.3.1"
+    "vite-tsconfig-paths": "^4.3.1",
+    "@graphql-codegen/client-preset": "5.0.0"
   },
   "engines": {
     "node": ">=18.0.0"

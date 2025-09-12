@@ -9,7 +9,7 @@ const SvgPlus = (props: SVGProps<SVGSVGElement>) => (
     stroke="currentColor"
     strokeLinecap="round"
     strokeLinejoin="round"
-    strokeWidth={1}
+    strokeWidth={2}
     className="plus_svg__feather plus_svg__feather-plus"
     {...props}
   >

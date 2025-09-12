@@ -155,6 +155,7 @@
 
 .slick-prev {
   left: calc(var(--button-size) * -1);
+  transition: left 0.2s ease-in-out;
 }
 [dir='rtl'] .slick-prev {
   right: calc(var(--button-size) * -1);
@@ -169,6 +170,7 @@
 
 .slick-next {
   right: calc(var(--button-size) * -1);
+  transition: right 0.2s ease-in-out;
 }
 [dir='rtl'] .slick-next {
   right: auto;

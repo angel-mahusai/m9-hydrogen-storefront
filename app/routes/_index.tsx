@@ -6,13 +6,15 @@ import {
   Link,
   type MetaFunction,
   NavLink,
+  useFetcher,
+  type Fetcher,
 } from 'react-router';
 import {Image, Money, Video} from '@shopify/hydrogen';
 import type {
   CollFragment,
   FeaturedCollectionFragment,
   RecommendedProductsQuery,
-  ShopInformationQuery,
+  HomepageShopInformationQuery,
   StorefrontComponentsQuery,
   TestimonialFragment,
 } from 'storefrontapi.generated';
@@ -54,7 +56,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
     }),
     // Add other queries here, so that they are loaded in parallel
     context.storefront.query(FEATURED_COLLECTION_QUERY),
-    context.storefront.query(SHOP_INFORMATION_QUERY),
+    context.storefront.query(HOMEPAGE_SHOP_INFORMATION_QUERY),
     context.storefront.query(ALL_COLLECTIONS_QUERY),
     context.storefront.query(TESTIMONIALS_QUERY),
   ]);
@@ -102,9 +104,8 @@ export default function Homepage() {
         setSlideCount(3.5);
       }
     };
-
-    handleResize(); // Set initial screen size
     window.addEventListener('resize', handleResize);
+    handleResize(); // Set initial screen size
   }, []);
 
   const topCategories = data.collections
@@ -142,6 +143,7 @@ export default function Homepage() {
         slideCount={slideCount}
       />
       <FeaturedItems featuredItems={storefrontComponents.featured_items} />
+      <Newsletter newsletterItem={storefrontComponents.newsletter} />
       <Testimonials
         testimonials={data.testimonials}
         slideCount={slideCount - 0.5}
@@ -237,7 +239,7 @@ function FeaturedBanner({
 function About({
   shopInformation,
 }: {
-  shopInformation: ShopInformationQuery['shop'];
+  shopInformation: HomepageShopInformationQuery['shop'];
 }) {
   const image = shopInformation.logo_colorful?.reference?.image ?? null;
   return (
@@ -432,6 +434,41 @@ function FeaturedItems({
   );
 }
 
+function Newsletter({
+  newsletterItem,
+}: {
+  newsletterItem: StorefrontComponentsQuery['metaobjects']['nodes'];
+}) {
+  const {Form, ...fetcher} = useFetcher();
+  const {data} = fetcher;
+  const subscribeSuccess = data?.subscriber;
+  const subscribeError = data?.error;
+  const newsletter = newsletterItem[0];
+
+  return (
+    <ImageWithText
+      image={newsletter?.image?.reference?.image}
+      textFirst={false}
+      containerClassName="newsletter-section"
+    >
+      <span className="caption">Subscribe to our newsletter</span>
+      <h1>{newsletter.title?.value}</h1>
+      <p>{newsletter.subtitle?.value}</p>
+      {subscribeSuccess ? (
+        <p className="success">
+          You have successfully subscribed to our newsletter!
+        </p>
+      ) : (
+        <Form className="newsletter-form" method="post" action="newsletter">
+          <input placeholder="Email" type="email" name="email" id="email" />
+          <button type="submit">JOIN</button>
+        </Form>
+      )}
+      {subscribeError && <p style={{color: 'red'}}>{data.error.message}</p>}
+    </ImageWithText>
+  );
+}
+
 function Testimonials({
   testimonials,
   slideCount,
@@ -513,8 +550,8 @@ function RecommendedProducts({
   );
 }
 
-const SHOP_INFORMATION_QUERY = `#graphql
-  query ShopInformation(
+const HOMEPAGE_SHOP_INFORMATION_QUERY = `#graphql
+  query HomepageShopInformation(
     $country: CountryCode
     $language: LanguageCode
   ) @inContext(language: $language, country: $country) {
