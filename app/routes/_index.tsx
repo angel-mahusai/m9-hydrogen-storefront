@@ -302,11 +302,7 @@ function NewestCreator({
     ? newestCreator?.image?.reference?.image
     : creator?.image?.reference?.image;
   return (
-    <ImageWithText
-      image={image}
-      containerClassName="background-medium"
-      textFirst={false}
-    >
+    <ImageWithText image={image} containerClassName="background-medium">
       <span className="caption">{newestCreator?.title?.value}</span>
       <h1 className="h0">{newestCreator.collection?.reference?.title}</h1>
       <p className="description">{newestCreator?.subtitle?.value}</p>
@@ -478,7 +474,7 @@ function Testimonials({
 }) {
   return (
     <div className="testimonials-section">
-      <h1 className="homepage-section-title">Testimonials</h1>
+      <h1 className="homepage-section-title">What Our Customers Are Saying</h1>
       <Carousel slidesToShow={slideCount} infinite={false}>
         {testimonials.map((testimonial) => {
           return (

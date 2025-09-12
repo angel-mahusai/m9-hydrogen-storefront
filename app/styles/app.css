@@ -13,6 +13,7 @@
   --padding-inner: 16px;
   --padding-outer: 32px;
   --padding-small: 8px;
+  --padding-medlarge: 48px;
   --padding-large: 64px;
 
   /* Colors */
@@ -42,7 +43,7 @@
 */
 .caption {
   text-transform: uppercase;
-  font-size: 0.9em;
+  font-size: 1em;
   font-weight: 500;
   letter-spacing: 0.1em;
 }
@@ -532,6 +533,10 @@ button.reset:hover:not(:has(> *)) {
   padding: 3px 0;
 }
 
+.header-submenu-child.sale {
+  color: var(--color-accent-coral);
+}
+
 .submenu-with-image {
   position: relative;
   height: 100%;
@@ -949,7 +954,7 @@ button.reset:hover:not(:has(> *)) {
 }
 
 .image-with-text .text-wrapper .description {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 400;
   margin-bottom: var(--padding-inner)
 }
@@ -1158,8 +1163,10 @@ button.reset:hover:not(:has(> *)) {
 
 .featured-banner-content p {
   font-weight: 300;
-  line-height: 1.8rem;
   margin-bottom: var(--padding-inner);
+  @media (min-width: 45em) {
+    line-height: 1.8rem;
+  }
 }
 
 .about {
@@ -1243,6 +1250,9 @@ button.reset:hover:not(:has(> *)) {
   min-height: 400px;
   height: auto;
   overflow: clip;
+  @media (min-width: 62em) {
+    min-height: 500px;
+  }
 }
 
 .featured-item-media img,
@@ -1268,6 +1278,12 @@ button.reset:hover:not(:has(> *)) {
   top: 0;
   background-color: rgba(0,0,0,0.3);
   padding: var(--padding-outer);
+}
+
+.featured-item-content h2 {
+  @media (min-width: 62em) {
+   font-size: 1.9rem;
+  }
 }
 
 .featured-item-content p {
@@ -1331,6 +1347,7 @@ button.reset:hover:not(:has(> *)) {
   width: 100%;
 }
 
+.creator-collection-quote .caption,
 .newsletter-section .caption,
 .testimonial-item .caption {
   width: 100%;
@@ -1470,6 +1487,126 @@ main:has(.collections) {
 * routes/collections.$handle.tsx
 * --------------------------------------------------
 */
+.collection-header {
+  width: 100%;
+  text-align: center;
+}
+
+.image-with-text h1 {
+  margin: 0;
+}
+
+.image-with-text .text-wrapper:has(.creator-collection-header) {
+  width: 100%;
+  @media (min-width: 45em) {
+    width: 90%;
+  }
+  @media (min-width: 62em) {
+    width: 80%;
+  }
+}
+
+.image-with-text.creator-collection-header-container  .image-wrapper img {
+  @media (min-width: 45em) {
+    height: auto;
+    max-height: 10vh;
+  }
+}
+
+.creator-collection-header {
+  display: flex;
+  width: 100%;
+  gap: var(--padding-inner);
+  padding: 0;
+  flex-direction: column;
+  align-items: start;
+  justify-content: center;
+  @media (min-width: 62em) {
+    padding: var(--padding-outer);
+  }
+}
+
+.creator-collection-header h1 {
+  @media (min-width: 45em) {
+    font-size: 2.5rem;
+    line-height: 2.8rem;
+  }
+  @media (min-width: 62em) {
+    font-size: 3rem;
+    line-height: 3.5rem;
+  }
+}
+
+.text-wrapper .creator-collection-header .description {
+  font-size: 1.0rem;
+  margin: 0;
+  @media (min-width: 45em) {
+    font-size: 1.2rem;
+  }
+}
+
+.creator-collection-header .social-links {
+  display: flex;
+  flex-direction: row;
+  gap: var(--padding-inner);
+}
+
+.creator-collection-header .social-links a {
+  color: var(--color-primary-main);
+}
+
+.theme-collection-header {
+  display: flex;
+  width: 100%;
+  gap: var(--padding-inner);
+  padding: var(--padding-outer);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.text-wrapper .theme-collection-header .description {
+  font-size: 1.0rem;
+  text-align: center;
+}
+
+.creator-collection-quote {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-background-dark);
+  color: var(--color-primary-main);
+  gap: var(--padding-inner);
+  padding: var(--padding-medlarge) var(--padding-outer);
+  width: 100%;
+}
+
+.creator-collection-quote h2 {
+  text-align: center;
+  font-weight: 600;
+  margin: 0;
+  @media (min-width: 45em) {
+    font-size: 1.75rem;
+  }
+}
+
+.creator-collection-quote .caption {
+  width: unset;
+  font-size: 0.875em;
+}
+
+.creator-featured-product-container .image-wrapper {
+  padding: var(--padding-inner);
+  @media (min-width: 45em) {
+    padding: 0;
+  }
+}
+
+.creator-featured-product-container .button {
+  margin-top: var(--padding-inner);
+}
+
 .collection-description {
   margin-bottom: 1rem;
   max-width: 95%;
