@@ -224,7 +224,7 @@ function HeaderSubmenu({
             const url = getUrl(childLink, publicStoreDomain, primaryDomainUrl);
             return (
               <NavLink
-                className="hover-fade header-submenu-child"
+                className={`hover-fade header-submenu-child${childLink.title === 'Sale' ? ' sale' : ''}`}
                 end
                 key={childLink.id}
                 prefetch="intent"

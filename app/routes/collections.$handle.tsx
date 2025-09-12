@@ -1,10 +1,11 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {useLoaderData, type MetaFunction} from 'react-router';
+import {NavLink, useLoaderData, type MetaFunction} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
+import ImageWithText from '~/components/ImageWithText';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -71,13 +72,113 @@ function loadDeferredData({context}: LoaderFunctionArgs) {
   return {};
 }
 
+interface SocialLink {
+  text: string;
+  url: string;
+}
+
 export default function Collection() {
   const {collection} = useLoaderData<typeof loader>();
-
+  const collectionType = collection.collection_type?.value;
+  const collectionImage =
+    collectionType === 'creator'
+      ? collection.creator?.reference?.image?.reference?.image
+      : collection.image;
+  const collectionDescription =
+    collectionType === 'creator'
+      ? collection.creator?.reference?.about?.value
+      : collection.description;
+  const creator = collection.creator?.reference;
+  const socialLinks: SocialLink[] | undefined =
+    collectionType === 'creator' && creator?.social_links?.value
+      ? ((JSON.parse(creator?.social_links?.value) ||
+          []) as unknown as SocialLink[])
+      : undefined;
   return (
     <div className="collection">
-      <h1>{collection.title}</h1>
-      <p className="collection-description">{collection.description}</p>
+      {collectionImage ? (
+        <ImageWithText
+          image={collectionImage}
+          textFirst={collectionType !== 'creator'}
+          containerClassName={`${collectionType}-collection-header-container`}
+        >
+          <div className={`${collectionType}-collection-header`}>
+            {collectionType === 'creator' && (
+              <span className="caption">Introducing</span>
+            )}
+            <h1>
+              {collectionType === 'category' && 'All '}
+              {collectionType === 'creator'
+                ? creator?.name?.value
+                : collection.title}
+            </h1>
+            {collectionDescription && (
+              <p className="description">{collectionDescription}</p>
+            )}
+            {socialLinks && (
+              <div className="social-links">
+                {socialLinks.map((link) => (
+                  <a
+                    href={link.url}
+                    key={`${creator?.name?.value}-${link.text}`}
+                    className="initial-underline-link"
+                  >
+                    {link.text}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </ImageWithText>
+      ) : (
+        <h1 className="collection-header">
+          {collectionType === 'category' && 'All'} {collection.title}
+        </h1>
+      )}
+      {collectionType === 'creator' && collection.quote && (
+        <div className="creator-collection-quote">
+          <h2>“{collection.quote?.reference?.message?.value}”</h2>
+          <p className="caption">
+            -{' '}
+            {collection.quote?.reference?.creator_name?.value ||
+              creator?.name?.value}
+          </p>
+        </div>
+      )}
+      {collectionType === 'creator' && collection.featured_product && (
+        <ImageWithText
+          image={
+            collection.featured_product?.reference?.product?.reference
+              ?.featuredImage
+          }
+          textFirst={true}
+          containerClassName="creator-featured-product-container background-medium"
+        >
+          <div className={`${collectionType}-collection-header`}>
+            <span className="caption">
+              {collection.featured_product.reference?.caption?.value ||
+                'Featured Product'}
+            </span>
+            <h1>
+              {
+                collection.featured_product?.reference?.product?.reference
+                  ?.title
+              }
+            </h1>
+            {collection.featured_product.reference?.description?.value && (
+              <p className="description">
+                {collection.featured_product.reference?.description?.value}
+              </p>
+            )}
+            <NavLink
+              className="button"
+              to={`/products/${collection.featured_product.reference?.product?.reference?.handle}`}
+            >
+              Shop Now
+            </NavLink>
+          </div>
+        </ImageWithText>
+      )}
       <PaginatedResourceSection
         connection={collection.products}
         resourcesClassName="products-grid"
@@ -119,6 +220,81 @@ const COLLECTION_QUERY = `#graphql
       handle
       title
       description
+      image {
+        id
+        url
+        height
+        width
+        altText
+      }
+      creator: metafield(namespace: "creator_collection", key: "creator") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            name: field(key: "name") {value}
+            image: field(key: "image") {
+              reference {
+                ... on MediaImage {
+                  image {
+                    id
+                    url
+                    height
+                    width
+                    altText
+                  }
+                }
+              }
+            }
+            about: field(key: "about") {
+              value
+            }
+            social_links: field(key: "social_links") {
+              value
+            }
+          }
+        }
+      }
+      quote: metafield(namespace: "creator_collection", key: "quote") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            message: field(key: "message") {value}
+            creator_name: field(key: "creator_name") {value}
+          }
+        }
+      }
+      featured_product: metafield(namespace: "creator_collection", key: "featured_product") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            name: field(key: "name") {value}
+            product: field(key: "product") {
+              reference {
+                ... on Product {
+                  id
+                  handle
+                  title
+                  featuredImage {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+            description: field(key: "description") {value}
+            caption: field(key: "caption") {value}
+          }
+        }
+      }
+      collection_type: metafield(namespace: "custom", key: "collection_type") {
+        value
+      }
       products(
         first: $first,
         last: $last,
