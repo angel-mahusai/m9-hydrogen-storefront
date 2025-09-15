@@ -1,4 +1,4 @@
-import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
+import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
 import {Await, NavLink, useLoaderData, type MetaFunction} from 'react-router';
 import {
   getSelectedProductOptions,
@@ -7,9 +7,10 @@ import {
   getProductOptions,
   getAdjacentAndFirstAvailableVariants,
   useSelectedOptionInUrlParam,
+  Video,
+  Image,
 } from '@shopify/hydrogen';
 import {ProductPrice} from '~/components/ProductPrice';
-import {ProductImage} from '~/components/ProductImage';
 import {ProductForm} from '~/components/ProductForm';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {PRODUCT_ITEM_FRAGMENT, PRODUCT_VARIANT_FRAGMENT} from '~/lib/fragments';
@@ -160,16 +161,65 @@ export default function Product() {
     });
   }
 
-  console.log(product);
   // Get creator information
   const creator = product.creator?.reference;
   const creatorImage = creator?.image?.reference?.image;
   const creatorDescription = creator?.about?.value;
-  const {title, descriptionHtml} = product;
+  const {title} = product;
+
   return (
     <>
       <div className="product">
-        <ProductImage image={selectedVariant?.image} />
+        <div className="product-image-wrapper">
+          <Carousel
+            slidesToShow={1}
+            infinite={true}
+            dots={true}
+            dotsClass="slick-dots slick-thumb"
+            customPaging={function (i) {
+              if (product.media.nodes.length <= i) {
+                return <></>;
+              }
+              const image = product.media.nodes[i].previewImage;
+              return image ? (
+                <Image
+                  alt={image.altText || title}
+                  aspectRatio={`${image.width}/${image.height}`}
+                  data={image}
+                  key={image.id}
+                  sizes="(min-width: 45em) 10vw, 20vw"
+                />
+              ) : (
+                <></>
+              );
+            }}
+          >
+            {product.media.nodes.map((media) => (
+              <div key={media.id}>
+                {media.mediaContentType === 'VIDEO' && (
+                  <Video
+                    data={media}
+                    playsInline
+                    autoPlay
+                    loop
+                    muted
+                    preload="metadata"
+                    controls={false}
+                  />
+                )}
+                {media.mediaContentType === 'IMAGE' && media.previewImage && (
+                  <Image
+                    alt={media.previewImage.altText || title}
+                    aspectRatio={`${media.previewImage.width}/${media.previewImage.height}`}
+                    data={media.previewImage}
+                    key={media.previewImage.id}
+                    sizes="(min-width: 45em) 50vw, 100vw"
+                  />
+                )}
+              </div>
+            ))}
+          </Carousel>
+        </div>
         <div className="product-main">
           <div className="product-caption">
             <NavLink className="hover-fade" to={`/`}>
@@ -242,7 +292,7 @@ export default function Product() {
           {creatorDescription && (
             <p className="description">{creatorDescription}</p>
           )}
-          <NavLink className="button" to={`/products/${creator?.handle}`}>
+          <NavLink className="button" to={`/collections/${creator?.handle}`}>
             Shop Now
           </NavLink>
         </div>
@@ -330,6 +380,32 @@ const PRODUCT_FRAGMENT = `#graphql
     seo {
       description
       title
+    }
+    media(first: 20) {
+      nodes {
+        alt
+        id
+        mediaContentType
+        presentation {
+          id
+        }
+        previewImage {
+          altText
+          url
+          width
+          height
+          id
+        }
+        ... on Video {
+          sources {
+            format
+            height
+            width
+            mimeType
+            url
+          }
+        }
+      }
     }
     creator: metafield(namespace: "pp_product", key: "creator") {
       value

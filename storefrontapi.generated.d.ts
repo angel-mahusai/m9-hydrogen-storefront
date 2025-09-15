@@ -1515,6 +1515,63 @@ export type ProductFragment = Pick<
     }
   >;
   seo: Pick<StorefrontAPI.Seo, 'description' | 'title'>;
+  media: {
+    nodes: Array<
+      | (Pick<
+          StorefrontAPI.ExternalVideo,
+          'alt' | 'id' | 'mediaContentType'
+        > & {
+          presentation?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MediaPresentation, 'id'>
+          >;
+          previewImage?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'altText' | 'url' | 'width' | 'height' | 'id'
+            >
+          >;
+        })
+      | (Pick<StorefrontAPI.MediaImage, 'alt' | 'id' | 'mediaContentType'> & {
+          presentation?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MediaPresentation, 'id'>
+          >;
+          previewImage?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'altText' | 'url' | 'width' | 'height' | 'id'
+            >
+          >;
+        })
+      | (Pick<StorefrontAPI.Model3d, 'alt' | 'id' | 'mediaContentType'> & {
+          presentation?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MediaPresentation, 'id'>
+          >;
+          previewImage?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'altText' | 'url' | 'width' | 'height' | 'id'
+            >
+          >;
+        })
+      | (Pick<StorefrontAPI.Video, 'alt' | 'id' | 'mediaContentType'> & {
+          sources: Array<
+            Pick<
+              StorefrontAPI.VideoSource,
+              'format' | 'height' | 'width' | 'mimeType' | 'url'
+            >
+          >;
+          presentation?: StorefrontAPI.Maybe<
+            Pick<StorefrontAPI.MediaPresentation, 'id'>
+          >;
+          previewImage?: StorefrontAPI.Maybe<
+            Pick<
+              StorefrontAPI.Image,
+              'altText' | 'url' | 'width' | 'height' | 'id'
+            >
+          >;
+        })
+    >;
+  };
   creator?: StorefrontAPI.Maybe<
     Pick<StorefrontAPI.Metafield, 'value'> & {
       reference?: StorefrontAPI.Maybe<
@@ -1655,6 +1712,66 @@ export type ProductQuery = {
         }
       >;
       seo: Pick<StorefrontAPI.Seo, 'description' | 'title'>;
+      media: {
+        nodes: Array<
+          | (Pick<
+              StorefrontAPI.ExternalVideo,
+              'alt' | 'id' | 'mediaContentType'
+            > & {
+              presentation?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MediaPresentation, 'id'>
+              >;
+              previewImage?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'altText' | 'url' | 'width' | 'height' | 'id'
+                >
+              >;
+            })
+          | (Pick<
+              StorefrontAPI.MediaImage,
+              'alt' | 'id' | 'mediaContentType'
+            > & {
+              presentation?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MediaPresentation, 'id'>
+              >;
+              previewImage?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'altText' | 'url' | 'width' | 'height' | 'id'
+                >
+              >;
+            })
+          | (Pick<StorefrontAPI.Model3d, 'alt' | 'id' | 'mediaContentType'> & {
+              presentation?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MediaPresentation, 'id'>
+              >;
+              previewImage?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'altText' | 'url' | 'width' | 'height' | 'id'
+                >
+              >;
+            })
+          | (Pick<StorefrontAPI.Video, 'alt' | 'id' | 'mediaContentType'> & {
+              sources: Array<
+                Pick<
+                  StorefrontAPI.VideoSource,
+                  'format' | 'height' | 'width' | 'mimeType' | 'url'
+                >
+              >;
+              presentation?: StorefrontAPI.Maybe<
+                Pick<StorefrontAPI.MediaPresentation, 'id'>
+              >;
+              previewImage?: StorefrontAPI.Maybe<
+                Pick<
+                  StorefrontAPI.Image,
+                  'altText' | 'url' | 'width' | 'height' | 'id'
+                >
+              >;
+            })
+        >;
+      };
       creator?: StorefrontAPI.Maybe<
         Pick<StorefrontAPI.Metafield, 'value'> & {
           reference?: StorefrontAPI.Maybe<
@@ -2042,7 +2159,7 @@ interface GeneratedQueryTypes {
     return: PoliciesQuery;
     variables: PoliciesQueryVariables;
   };
-  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n          image: field(key: "image") {\n            reference {\n              ... on MediaImage {\n                image {\n                  id\n                  url\n                  height\n                  width\n                  altText\n                }\n              }\n            }\n          }\n          about: field(key: "about") {\n            value\n          }\n        }\n      }\n    }\n    product_info: metafield(namespace: "pp_product", key: "product_information") {value}\n    care_guide: metafield(namespace: "descriptors", key: "care_guide") {value}\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
+  '#graphql\n  query Product(\n    $country: CountryCode\n    $handle: String!\n    $language: LanguageCode\n    $selectedOptions: [SelectedOptionInput!]!\n  ) @inContext(country: $country, language: $language) {\n    product(handle: $handle) {\n      ...Product\n    }\n  }\n  #graphql\n  fragment Product on Product {\n    id\n    title\n    vendor\n    handle\n    descriptionHtml\n    description\n    encodedVariantExistence\n    encodedVariantAvailability\n    options {\n      name\n      optionValues {\n        name\n        firstSelectableVariant {\n          ...ProductVariant\n        }\n        swatch {\n          color\n          image {\n            previewImage {\n              url\n            }\n          }\n        }\n      }\n    }\n    selectedOrFirstAvailableVariant(selectedOptions: $selectedOptions, ignoreUnknownOptions: true, caseInsensitiveMatch: true) {\n      ...ProductVariant\n    }\n    adjacentVariants (selectedOptions: $selectedOptions) {\n      ...ProductVariant\n    }\n    seo {\n      description\n      title\n    }\n    media(first: 20) {\n      nodes {\n        alt\n        id\n        mediaContentType\n        presentation {\n          id\n        }\n        previewImage {\n          altText\n          url\n          width\n          height\n          id\n        }\n        ... on Video {\n          sources {\n            format\n            height\n            width\n            mimeType\n            url\n          }\n        }\n      }\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n          image: field(key: "image") {\n            reference {\n              ... on MediaImage {\n                image {\n                  id\n                  url\n                  height\n                  width\n                  altText\n                }\n              }\n            }\n          }\n          about: field(key: "about") {\n            value\n          }\n        }\n      }\n    }\n    product_info: metafield(namespace: "pp_product", key: "product_information") {value}\n    care_guide: metafield(namespace: "descriptors", key: "care_guide") {value}\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
     return: ProductQuery;
     variables: ProductQueryVariables;
   };
