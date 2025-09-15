@@ -61,6 +61,17 @@
 
     opacity: .4;
 }
+
+input,
+input:focus {
+  border-radius: 0;
+  border: 0;
+  outline: none;
+  margin: var(--padding-top);
+  margin-right: calc(10vw + 24px + 15px);
+  padding: 0;
+  width: 100%;
+}
 /*
 * --------------------------------------------------
 * Non anchor links
@@ -1724,7 +1735,12 @@ main:has(.collections) {
 * routes/products.$handle.tsx
 * --------------------------------------------------
 */
+main:has(.product) {
+  background-color: var(--color-background-light);
+}
+
 .product {
+  position: relative;
   margin: var(--padding-large) auto;
   display: grid;
   padding: 0 var(--padding-inner);
@@ -1845,8 +1861,93 @@ main:has(.collections) {
   width: 100%;
 }
 
-.product-main .product-form .add-to-cart {
+.product-main .product-form .purchase-controls {
   margin-top: var(--padding-inner);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: start;
+  width: 100%;
+  gap: var(--padding-inner);
+}
+
+.product-main .product-form .purchase-controls .quantity-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  border: 1px solid rgba(var(--color-secondary-text), 1);
+  border-radius: var(--button-border-radius);
+  min-width: 8rem;
+  max-width: 8rem;
+}
+
+.quantity-dropdown-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.quantity-dropdown-wrapper .dropdown-button {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quantity-wrapper .product-quantity {
+  font-size: 0.9rem;
+  padding: var(--padding-small) var(--padding-outer);
+  text-align: center;
+  margin: 0;
+}
+
+.quantity-wrapper .dropdown-button .product-quantity {
+  padding: var(--padding-small) var(--padding-inner);
+  text-align: left;
+}
+
+.button-start {
+  position: absolute;
+  left: var(--padding-small);
+}
+
+.button-end {
+  position: absolute;
+  right: var(--padding-small);
+}
+
+.product-quantity-dropdown {
+  display: none;
+  position: absolute;
+  flex-direction: column;
+  background-color: var(--color-background-light);
+  top: calc(100% - 1px);
+  left: -1px;
+  width: calc(100% + 2px);
+  max-height: 12rem;
+  overflow-y: scroll;
+  border: 1px solid rgba(var(--color-secondary-text), 1);
+  border-top: none;
+}
+
+.product-quantity-dropdown button {
+  padding: var(--padding-small) var(--padding-inner);
+  font-size: 0.9rem;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.product-quantity-dropdown.open {
+  display: flex;
+}
+
+.product-main .product-form .add-to-cart,
+.product-main .product-form .add-to-cart form,
+.product-main .product-form .add-to-cart button {
+  width: 100%;
+  max-width: 100%;
 }
 
 .complementary-products {
