@@ -22,10 +22,17 @@ export function ProductForm({
       {productOptions.map((option) => {
         // If there is only a single value in the option values, don't display the option
         if (option.optionValues.length === 1) return null;
-
+        const selectedVariant = option.optionValues.find(
+          (value) => value.selected,
+        );
         return (
           <div className="product-options" key={option.name}>
-            <h5>{option.name}</h5>
+            <div>
+              <h5>{option.name}</h5>
+              {selectedVariant && (
+                <span className="selected-variant">{selectedVariant.name}</span>
+              )}
+            </div>
             <div className="product-options-grid">
               {option.optionValues.map((value) => {
                 const {
@@ -75,12 +82,6 @@ export function ProductForm({
                         exists && !selected ? ' link' : ''
                       }`}
                       key={option.name + name}
-                      style={{
-                        border: selected
-                          ? '1px solid black'
-                          : '1px solid transparent',
-                        opacity: available ? 1 : 0.3,
-                      }}
                       disabled={!exists}
                       onClick={() => {
                         if (!selected) {
@@ -97,29 +98,30 @@ export function ProductForm({
                 }
               })}
             </div>
-            <br />
           </div>
         );
       })}
-      <AddToCartButton
-        disabled={!selectedVariant || !selectedVariant.availableForSale}
-        onClick={() => {
-          open('cart');
-        }}
-        lines={
-          selectedVariant
-            ? [
-                {
-                  merchandiseId: selectedVariant.id,
-                  quantity: 1,
-                  selectedVariant,
-                },
-              ]
-            : []
-        }
-      >
-        {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-      </AddToCartButton>
+      <div className="add-to-cart">
+        <AddToCartButton
+          disabled={!selectedVariant || !selectedVariant.availableForSale}
+          onClick={() => {
+            open('cart');
+          }}
+          lines={
+            selectedVariant
+              ? [
+                  {
+                    merchandiseId: selectedVariant.id,
+                    quantity: 1,
+                    selectedVariant,
+                  },
+                ]
+              : []
+          }
+        >
+          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+        </AddToCartButton>
+      </div>
     </div>
   );
 }
@@ -134,7 +136,8 @@ function ProductOptionSwatch({
   const image = swatch?.image?.previewImage?.url;
   const color = swatch?.color;
 
-  if (!image && !color) return name;
+  // if (!image && !color) return name;
+  if (!image) return name;
 
   return (
     <div

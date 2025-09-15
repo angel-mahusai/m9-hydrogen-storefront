@@ -76,17 +76,15 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
-  const recommendedProducts = context.storefront
-    .query(RECOMMENDED_PRODUCTS_QUERY)
-    .catch((error) => {
-      // Log query errors, but don't throw them so the page can still render
-      console.error(error);
-      return null;
-    });
+  // const recommendedProducts = context.storefront
+  //   .query(RECOMMENDED_PRODUCTS_QUERY)
+  //   .catch((error) => {
+  //     // Log query errors, but don't throw them so the page can still render
+  //     console.error(error);
+  //     return null;
+  //   });
 
-  return {
-    recommendedProducts,
-  };
+  return {};
 }
 
 export default function Homepage() {
@@ -520,31 +518,6 @@ function FeaturedCollection({
   );
 }
 
-function RecommendedProducts({
-  products,
-}: {
-  products: Promise<RecommendedProductsQuery | null>;
-}) {
-  return (
-    <div className="recommended-products">
-      <h2>Recommended Products</h2>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Await resolve={products}>
-          {(response) => (
-            <div className="recommended-products-grid">
-              {response
-                ? response.products.nodes.map((product) => (
-                    <ProductItem key={product.id} product={product} />
-                  ))
-                : null}
-            </div>
-          )}
-        </Await>
-      </Suspense>
-      <br />
-    </div>
-  );
-}
 
 const HOMEPAGE_SHOP_INFORMATION_QUERY = `#graphql
   query HomepageShopInformation(
@@ -760,35 +733,6 @@ const FEATURED_COLLECTION_QUERY = `#graphql
     collections(first: 1, sortKey: UPDATED_AT, reverse: true) {
       nodes {
         ...FeaturedCollection
-      }
-    }
-  }
-` as const;
-
-const RECOMMENDED_PRODUCTS_QUERY = `#graphql
-  fragment RecommendedProduct on Product {
-    id
-    title
-    handle
-    priceRange {
-      minVariantPrice {
-        amount
-        currencyCode
-      }
-    }
-    featuredImage {
-      id
-      url
-      altText
-      width
-      height
-    }
-  }
-  query RecommendedProducts ($country: CountryCode, $language: LanguageCode)
-    @inContext(country: $country, language: $language) {
-    products(first: 4, sortKey: UPDATED_AT, reverse: true) {
-      nodes {
-        ...RecommendedProduct
       }
     }
   }
