@@ -24,6 +24,7 @@ export function ProductItem({
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
   const selectedVariant = product.selectedOrFirstAvailableVariant;
+
   return (
     <div className="product-item" key={product.id}>
       <div className="product-image-wrapper">
@@ -60,16 +61,23 @@ export function ProductItem({
           </AddToCartButton>
         </div>
       </div>
+      {selectedVariant?.compareAtPrice && selectedVariant?.availableForSale && (
+        <div className="product-badge on-sale">Sale</div>
+      )}
       <Link className="product-content" prefetch="intent" to={variantUrl}>
         <h4>{product.title}</h4>
         {product.creator && (
           <small>{product.creator.reference.name.value}</small>
         )}
         <small>
-          <ProductPrice
-            price={selectedVariant?.price}
-            compareAtPrice={selectedVariant?.compareAtPrice}
-          />
+          {selectedVariant?.availableForSale ? (
+            <ProductPrice
+              price={selectedVariant?.price}
+              compareAtPrice={selectedVariant?.compareAtPrice}
+            />
+          ) : (
+            <span>Sold out</span>
+          )}
         </small>
       </Link>
     </div>

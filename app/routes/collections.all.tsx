@@ -92,6 +92,15 @@ const COLLECTION_ITEM_FRAGMENT = `#graphql
         ...MoneyCollectionItem
       }
     }
+    creator: metafield(namespace: "creator_collection", key: "creator") {
+      reference {
+        ... on Metaobject {
+          id
+          handle
+          name: field(key: "name") {value}
+        }
+      }
+    }
   }
 ` as const;
 
