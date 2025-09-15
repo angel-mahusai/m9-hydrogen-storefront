@@ -7,6 +7,9 @@ import type {
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
+import {useState} from 'react';
+import {ChevronDownIcon, MinusIcon, PlusIcon} from '~/assets';
+import {p} from 'node_modules/react-router/dist/development/lib-CCSAGgcP.mjs';
 
 export function ProductForm({
   productOptions,
@@ -17,6 +20,9 @@ export function ProductForm({
 }) {
   const navigate = useNavigate();
   const {open} = useAside();
+  const [productQuantity, setProductQuantity] = useState<number | undefined>(1);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+
   return (
     <div className="product-form">
       {productOptions.map((option) => {
@@ -101,26 +107,116 @@ export function ProductForm({
           </div>
         );
       })}
-      <div className="add-to-cart">
-        <AddToCartButton
-          disabled={!selectedVariant || !selectedVariant.availableForSale}
-          onClick={() => {
-            open('cart');
-          }}
-          lines={
-            selectedVariant
-              ? [
-                  {
-                    merchandiseId: selectedVariant.id,
-                    quantity: 1,
-                    selectedVariant,
-                  },
-                ]
-              : []
-          }
-        >
-          {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
-        </AddToCartButton>
+      <div className="purchase-controls">
+        <div className="quantity-wrapper">
+          {productQuantity && productQuantity < 10 ? (
+            <div className="quantity-dropdown-wrapper">
+              <button
+                className="dropdown-button"
+                onClick={() => {
+                  setIsDropdownOpen((isDropdownOpen) => !isDropdownOpen);
+                }}
+              >
+                <span className="product-quantity">{productQuantity}</span>
+                <ChevronDownIcon
+                  width={18}
+                  height={18}
+                  stroke="rgb(var(--color-secondary-text))"
+                  viewBox="0 0 24 24"
+                  style={{
+                    transform: `translateX(calc(var(--padding-small) * -1)) ${
+                      isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                    }`,
+                  }}
+                />
+              </button>
+              <div
+                className={`product-quantity-dropdown${isDropdownOpen ? ' open' : ''}`}
+              >
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((quantity) => (
+                  <button
+                    key={`product-quantity-${quantity}`}
+                    onClick={() => {
+                      setProductQuantity(quantity);
+                      setIsDropdownOpen((isDropdownOpen) => !isDropdownOpen);
+                    }}
+                  >
+                    {quantity === 10 ? '10+' : quantity}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <>
+              <button
+                className="button-start"
+                onClick={() =>
+                  setProductQuantity(
+                    productQuantity
+                      ? productQuantity > 1
+                        ? productQuantity - 1
+                        : productQuantity
+                      : 1,
+                  )
+                }
+              >
+                <MinusIcon
+                  width={16}
+                  height={16}
+                  stroke="rgb(var(--color-secondary-text))"
+                  viewBox="0 0 24 24"
+                />
+              </button>
+              <input
+                className="product-quantity"
+                id="product-quantity"
+                value={productQuantity || ''}
+                onChange={(e) =>
+                  setProductQuantity(
+                    Number(e.target.value) <= 0
+                      ? undefined
+                      : Number(e.target.value),
+                  )
+                }
+                type="text"
+              />
+              <button
+                className="button-end"
+                onClick={() =>
+                  setProductQuantity(productQuantity ? productQuantity + 1 : 1)
+                }
+              >
+                <PlusIcon
+                  width={18}
+                  height={18}
+                  stroke="rgb(var(--color-secondary-text))"
+                  viewBox="0 0 24 24"
+                />
+              </button>
+            </>
+          )}
+        </div>
+        <div className="add-to-cart">
+          <AddToCartButton
+            disabled={!selectedVariant || !selectedVariant.availableForSale}
+            onClick={() => {
+              open('cart');
+            }}
+            lines={
+              selectedVariant
+                ? [
+                    {
+                      merchandiseId: selectedVariant.id,
+                      quantity: productQuantity,
+                      selectedVariant,
+                    },
+                  ]
+                : []
+            }
+          >
+            {selectedVariant?.availableForSale ? 'Add to cart' : 'Sold out'}
+          </AddToCartButton>
+        </div>
       </div>
     </div>
   );

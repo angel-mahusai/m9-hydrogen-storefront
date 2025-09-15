@@ -233,7 +233,7 @@ export default function Product() {
       <ImageWithText
         image={creatorImage}
         textFirst={false}
-        containerClassName={`creator-collection-header-container`}
+        containerClassName={`creator-collection-header-container background-medium`}
       >
         <div className={`creator-collection-header`}>
           <span className="caption">About the Creator</span>

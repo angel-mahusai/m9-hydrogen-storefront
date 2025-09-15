@@ -2,6 +2,7 @@ export {default as ArrowLeftIcon} from './ArrowLeft';
 export {default as ArrowRightIcon} from './ArrowRight';
 export {default as CartPlusIcon} from './CartPlus';
 export {default as CartIcon} from './Cart';
+export {default as ChevronDownIcon} from './ChevronDown';
 export {default as MenuIcon} from './Menu';
 export {default as MinusIcon} from './Minus';
 export {default as PlusIcon} from './Plus';
