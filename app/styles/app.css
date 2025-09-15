@@ -149,6 +149,10 @@ input:focus {
   border-radius: var(--button-border-radius);
 }
 
+.product-main .product-form .add-to-cart button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
 /*
 * --------------------------------------------------
 * components/AnnouncementBar
@@ -900,7 +904,50 @@ button.reset:hover:not(:has(> *)) {
 .product-image-wrapper {
   position: relative;
   overflow: hidden;
-  width: 100%
+  width: 100%;
+}
+
+.product .product-image-wrapper {
+  height: calc(100% + 8rem);
+}
+
+.product-image-wrapper .slick-slider  {
+  height: 100%;
+}
+
+.product-image-wrapper .slick-slider .slick-prev,
+.product-image-wrapper .slick-slider .slick-next{
+  top: calc(50% - 8rem);
+}
+
+.product-image-wrapper .slick-dots.slick-thumb {
+  position: relative;
+  display: none !important;
+  @media (min-width: 45em) {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr);
+    grid-gap: 1rem;
+  }
+}
+
+.product-image-wrapper .slick-dots.slick-thumb li {
+  width: 8rem;
+  height: 8rem;
+  border-bottom: 2px solid rgba(var(--color-secondary-text), 0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-image-wrapper .slick-dots.slick-thumb li img {
+  padding-bottom: 3px;
+  max-height: 8rem;
+  width: auto !important;
+  max-width: 8rem;
+}
+
+.product-image-wrapper .slick-dots.slick-thumb li.slick-active {
+  border-bottom: 2px solid rgba(var(--color-secondary-text), 0.4);
 }
 
 .quick-add-button {
@@ -1761,6 +1808,11 @@ main:has(.product) {
   width: 100%;
 }
 
+.thumbnails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
 .product-main {
   align-self: start;
 }
@@ -1770,8 +1822,11 @@ main:has(.product) {
   align-items: center;
   gap: 0.05rem;
   color: var(--color-primary-main);
-  font-size: 0.9rem;
-  margin: var(--padding-small) 0;
+  font-size: 0.8rem;
+  margin: var(--padding-inner) 0 var(--padding-small);
+  @media (min-width: 62em) {
+    font-size: 0.9rem;
+  }
 }
 
 .product-main .product-caption a {
@@ -1780,6 +1835,9 @@ main:has(.product) {
 
 .product-main h1 {
   margin-bottom: var(--padding-inner);
+  @media (max-width: 44.99em) {
+    font-size: 1.8rem;
+  }
 }
 
 .product-main .product-price {
@@ -1816,8 +1874,11 @@ main:has(.product) {
 .product-options .selected-variant {
   font-weight: 600;
   margin: 0;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   text-transform: uppercase;
+  @media (min-width: 45em) {
+    font-size: 0.8rem;
+  }
 }
 
 .product-options-grid {
@@ -1878,8 +1939,12 @@ main:has(.product) {
   justify-content: space-around;
   border: 1px solid rgba(var(--color-secondary-text), 1);
   border-radius: var(--button-border-radius);
-  min-width: 8rem;
-  max-width: 8rem;
+  min-width: 7rem;
+  max-width: 7rem;
+  @media (min-width: 62em) {
+    min-width: 8rem;
+    max-width: 8rem;
+  }
 }
 
 .quantity-dropdown-wrapper {
