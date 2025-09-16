@@ -137,7 +137,7 @@ async function loadCriticalData({context}: LoaderFunctionArgs) {
  * Make sure to not throw any errors here, as it will cause the page to 500.
  */
 function loadDeferredData({context}: LoaderFunctionArgs) {
-  const {storefront, customerAccount, cart, adminClient} = context;
+  const {storefront, customerAccount, cart} = context;
 
   // defer the footer query (below the fold)
   const footer = storefront

@@ -1,5 +1,5 @@
-import {ChildMenuItemFragment, MenuItemFragment} from 'storefrontapi.generated';
-import { MenuItem } from 'types/admin.types';
+import {MenuItemFragment} from 'storefrontapi.generated';
+import {useEffect} from 'react';
 
 export function getUrl(
   menuItem: MenuItemFragment,
@@ -18,4 +18,23 @@ export function getUrl(
       : menuItem.url;
 
   return url;
+}
+
+export function useClickOutside(ref: React.RefObject<HTMLElement>, onClickOutside: () => void) {
+  useEffect(() => {
+    /**
+     * Invoke Function onClick outside of element
+     */
+    function handleClickOutside({target}: MouseEvent) {
+      if (ref.current && !ref.current.contains(target as Node)) {
+        onClickOutside();
+      }
+    }
+    // Bind
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      // dispose
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [ref, onClickOutside]);
 }

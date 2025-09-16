@@ -1,10 +1,20 @@
 import {redirect, type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {NavLink, useLoaderData, type MetaFunction} from 'react-router';
+import {
+  NavLink,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  type MetaFunction,
+} from 'react-router';
 import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
 import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
+import {useMemo, useRef, useState} from 'react';
+import {ChevronDownIcon, FilterIcon} from '~/assets';
+import {useClickOutside} from '~/lib/utils';
+import {PRODUCT_COLLECTION_SORT_MAPPING} from '~/lib/constants';
 import ImageWithText from '~/components/ImageWithText';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
@@ -14,13 +24,17 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
 };
 
 export async function loader(args: LoaderFunctionArgs) {
+  const url = new URL(args.request.url);
+  const sortKey = url.searchParams.get('sort_by');
+  const filterQuery = '';
+
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
 
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData};
+  return {...deferredData, ...criticalData, sortKey, filterQuery};
 }
 
 /**
@@ -42,9 +56,21 @@ async function loadCriticalData({
     throw redirect('/collections');
   }
 
+  const sortAndFilterVariables: Record<string, any> = {};
+  const url = new URL(request.url);
+  const sortKey = url.searchParams.get(
+    'sort_by',
+  ) as keyof typeof PRODUCT_COLLECTION_SORT_MAPPING;
+  if (sortKey && sortKey in PRODUCT_COLLECTION_SORT_MAPPING) {
+    sortAndFilterVariables['sortKey'] =
+      PRODUCT_COLLECTION_SORT_MAPPING[sortKey].value;
+    sortAndFilterVariables['reverse'] =
+      PRODUCT_COLLECTION_SORT_MAPPING[sortKey].reverse;
+  }
+
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
-      variables: {handle, ...paginationVariables},
+      variables: {handle, ...paginationVariables, ...sortAndFilterVariables},
       // Add other queries here, so that they are loaded in parallel
     }),
   ]);
@@ -78,7 +104,21 @@ interface SocialLink {
 }
 
 export default function Collection() {
-  const {collection} = useLoaderData<typeof loader>();
+  const {collection, sortKey} = useLoaderData<typeof loader>();
+
+  const {pathname, search} = useLocation();
+  const searchParams = useMemo(() => new URLSearchParams(search), [search]);
+  const navigate = useNavigate();
+  const [isFilterOpen, setIsFilterOpen] = useState<boolean>(false);
+  const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
+  const sortDropdownRef = useRef<HTMLDivElement>(null);
+  const sortBy =
+    sortKey && {}.hasOwnProperty.call(PRODUCT_COLLECTION_SORT_MAPPING, sortKey)
+      ? PRODUCT_COLLECTION_SORT_MAPPING[
+          sortKey as keyof typeof PRODUCT_COLLECTION_SORT_MAPPING
+        ]
+      : null;
+
   const collectionType = collection.collection_type?.value;
   const collectionImage =
     collectionType === 'creator'
@@ -94,6 +134,11 @@ export default function Collection() {
       ? ((JSON.parse(creator?.social_links?.value) ||
           []) as unknown as SocialLink[])
       : undefined;
+
+  useClickOutside(sortDropdownRef, () => {
+    setIsSortOpen(false);
+  });
+
   return (
     <div className="collection">
       {collectionImage ? (
@@ -179,18 +224,88 @@ export default function Collection() {
           </div>
         </ImageWithText>
       )}
-      <PaginatedResourceSection
-        connection={collection.products}
-        resourcesClassName="products-grid"
-      >
-        {({node: product, index}) => (
-          <ProductItem
-            key={product.id}
-            product={product}
-            loading={index < 8 ? 'eager' : undefined}
-          />
-        )}
-      </PaginatedResourceSection>
+      <div className="collection-products">
+        <div className="sticky-facets">
+          <div className="facets-bar">
+            <button
+              className="filter-button"
+              onClick={() => setIsFilterOpen(!isFilterOpen)}
+            >
+              <FilterIcon width={18} height={18} viewBox="0 0 24 24" />
+              <span>{isFilterOpen ? 'Hide' : 'Show'} Filters</span>
+              <ChevronDownIcon
+                width={18}
+                height={18}
+                viewBox="0 0 24 24"
+                style={{
+                  transform: `${isFilterOpen ? 'scaleY(-1)' : 'scaleY(1)'}`,
+                }}
+              />
+            </button>
+            <div ref={sortDropdownRef}>
+              <button
+                className="sort-button"
+                onClick={() => setIsSortOpen(!isSortOpen)}
+              >
+                <span>{sortBy?.displayName || 'Sort By'}</span>
+                <ChevronDownIcon
+                  width={18}
+                  height={18}
+                  stroke="rgb(var(--color-secondary-text))"
+                  viewBox="0 0 24 24"
+                  style={{
+                    transform: `${isSortOpen ? 'scaleY(-1)' : 'scaleY(1)'}`,
+                  }}
+                />
+              </button>
+              <div className={`sort-options${isSortOpen ? ' open' : ''}`}>
+                {Object.entries(PRODUCT_COLLECTION_SORT_MAPPING).map(
+                  ([key, sortOption]) => (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setIsSortOpen(false);
+                        searchParams.set('sort_by', key);
+                        navigate({
+                          pathname,
+                          search: searchParams.toString(),
+                        });
+                      }}
+                      style={
+                        searchParams.get('sort_by') === key
+                          ? {
+                              textDecoration: 'underline',
+                              textUnderlineOffset: '5px',
+                            }
+                          : {}
+                      }
+                    >
+                      {sortOption.displayName}
+                    </button>
+                  ),
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="products-grid-wrapper">
+          <div className={`product-filters${isFilterOpen ? ' open' : ''}`}>
+            FILTERS
+          </div>
+          <PaginatedResourceSection
+            connection={collection.products}
+            resourcesClassName="products-grid"
+          >
+            {({node: product, index}) => (
+              <ProductItem
+                key={product.id}
+                product={product}
+                loading={index < 8 ? 'eager' : undefined}
+              />
+            )}
+          </PaginatedResourceSection>
+        </div>
+      </div>
       <Analytics.CollectionView
         data={{
           collection: {
@@ -214,6 +329,8 @@ const COLLECTION_QUERY = `#graphql
     $last: Int
     $startCursor: String
     $endCursor: String
+    $sortKey: ProductCollectionSortKeys
+    $reverse: Boolean
   ) @inContext(country: $country, language: $language) {
     collection(handle: $handle) {
       id
@@ -296,6 +413,8 @@ const COLLECTION_QUERY = `#graphql
         value
       }
       products(
+        sortKey: $sortKey,
+        reverse: $reverse,
         first: $first,
         last: $last,
         before: $startCursor,
