@@ -7,9 +7,9 @@ import type {
 import {AddToCartButton} from './AddToCartButton';
 import {useAside} from './Aside';
 import type {ProductFragment} from 'storefrontapi.generated';
-import {useState} from 'react';
+import {useRef, useState} from 'react';
 import {ChevronDownIcon, MinusIcon, PlusIcon} from '~/assets';
-import {p} from 'node_modules/react-router/dist/development/lib-CCSAGgcP.mjs';
+import {useClickOutside} from '~/lib/utils';
 
 export function ProductForm({
   productOptions,
@@ -22,6 +22,11 @@ export function ProductForm({
   const {open} = useAside();
   const [productQuantity, setProductQuantity] = useState<number | undefined>(1);
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const quantityDropdownRef = useRef<HTMLDivElement>(null);
+
+  useClickOutside(quantityDropdownRef, () => {
+    setIsDropdownOpen(false);
+  });
 
   return (
     <div className="product-form">
@@ -110,7 +115,10 @@ export function ProductForm({
       <div className="purchase-controls">
         <div className="quantity-wrapper">
           {productQuantity && productQuantity < 10 ? (
-            <div className="quantity-dropdown-wrapper">
+            <div
+              className="quantity-dropdown-wrapper"
+              ref={quantityDropdownRef}
+            >
               <button
                 className="dropdown-button"
                 onClick={() => {
@@ -125,7 +133,7 @@ export function ProductForm({
                   viewBox="0 0 24 24"
                   style={{
                     transform: `translateX(calc(var(--padding-small) * -1)) ${
-                      isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)'
+                      isDropdownOpen ? 'scaleY(-1)' : 'scaleY(1)'
                     }`,
                   }}
                 />

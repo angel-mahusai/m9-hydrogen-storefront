@@ -13,7 +13,6 @@ import {Image, Money, Video} from '@shopify/hydrogen';
 import type {
   CollFragment,
   FeaturedCollectionFragment,
-  RecommendedProductsQuery,
   HomepageShopInformationQuery,
   StorefrontComponentsQuery,
   TestimonialFragment,
@@ -517,7 +516,6 @@ function FeaturedCollection({
     </Link>
   );
 }
-
 
 const HOMEPAGE_SHOP_INFORMATION_QUERY = `#graphql
   query HomepageShopInformation(

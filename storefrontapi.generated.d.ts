@@ -1039,6 +1039,8 @@ export type CollectionQueryVariables = StorefrontAPI.Exact<{
   endCursor?: StorefrontAPI.InputMaybe<
     StorefrontAPI.Scalars['String']['input']
   >;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductCollectionSortKeys>;
+  reverse?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Boolean']['input']>;
 }>;
 
 export type CollectionQuery = {
@@ -1259,36 +1261,12 @@ export type StoreCollectionsQuery = {
   };
 };
 
-export type MoneyCollectionItemFragment = Pick<
-  StorefrontAPI.MoneyV2,
-  'amount' | 'currencyCode'
->;
-
-export type CollectionItemFragment = Pick<
-  StorefrontAPI.Product,
-  'id' | 'handle' | 'title'
-> & {
-  featuredImage?: StorefrontAPI.Maybe<
-    Pick<StorefrontAPI.Image, 'id' | 'altText' | 'url' | 'width' | 'height'>
-  >;
-  priceRange: {
-    minVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
-    maxVariantPrice: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
-  };
-  creator?: StorefrontAPI.Maybe<{
-    reference?: StorefrontAPI.Maybe<
-      Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
-        name?: StorefrontAPI.Maybe<
-          Pick<StorefrontAPI.MetaobjectField, 'value'>
-        >;
-      }
-    >;
-  }>;
-};
-
 export type CatalogQueryVariables = StorefrontAPI.Exact<{
   country?: StorefrontAPI.InputMaybe<StorefrontAPI.CountryCode>;
   language?: StorefrontAPI.InputMaybe<StorefrontAPI.LanguageCode>;
+  sortKey?: StorefrontAPI.InputMaybe<StorefrontAPI.ProductSortKeys>;
+  reverse?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Boolean']['input']>;
+  query?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['String']['input']>;
   first?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
   last?: StorefrontAPI.InputMaybe<StorefrontAPI.Scalars['Int']['input']>;
   startCursor?: StorefrontAPI.InputMaybe<
@@ -1319,15 +1297,42 @@ export type CatalogQuery = {
             'amount' | 'currencyCode'
           >;
         };
-        creator?: StorefrontAPI.Maybe<{
-          reference?: StorefrontAPI.Maybe<
-            Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
-              name?: StorefrontAPI.Maybe<
-                Pick<StorefrontAPI.MetaobjectField, 'value'>
-              >;
-            }
-          >;
-        }>;
+        selectedOrFirstAvailableVariant?: StorefrontAPI.Maybe<
+          Pick<
+            StorefrontAPI.ProductVariant,
+            'availableForSale' | 'id' | 'sku' | 'title'
+          > & {
+            compareAtPrice?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+            >;
+            image?: StorefrontAPI.Maybe<
+              {__typename: 'Image'} & Pick<
+                StorefrontAPI.Image,
+                'id' | 'url' | 'altText' | 'width' | 'height'
+              >
+            >;
+            price: Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>;
+            product: Pick<StorefrontAPI.Product, 'title' | 'handle'>;
+            selectedOptions: Array<
+              Pick<StorefrontAPI.SelectedOption, 'name' | 'value'>
+            >;
+            unitPrice?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.MoneyV2, 'amount' | 'currencyCode'>
+            >;
+          }
+        >;
+        variantsCount?: StorefrontAPI.Maybe<Pick<StorefrontAPI.Count, 'count'>>;
+        creator?: StorefrontAPI.Maybe<
+          Pick<StorefrontAPI.Metafield, 'value'> & {
+            reference?: StorefrontAPI.Maybe<
+              Pick<StorefrontAPI.Metaobject, 'id' | 'handle'> & {
+                name?: StorefrontAPI.Maybe<
+                  Pick<StorefrontAPI.MetaobjectField, 'value'>
+                >;
+              }
+            >;
+          }
+        >;
       }
     >;
     pageInfo: Pick<
@@ -2135,7 +2140,7 @@ interface GeneratedQueryTypes {
     return: BlogsQuery;
     variables: BlogsQueryVariables;
   };
-  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    selectedOrFirstAvailableVariant {\n      ...ProductVariant\n    }\n    variantsCount {\n      count\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image {\n        id\n        url\n        height\n        width\n        altText\n      }\n      creator: metafield(namespace: "creator_collection", key: "creator") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            name: field(key: "name") {value}\n            image: field(key: "image") {\n              reference {\n                ... on MediaImage {\n                  image {\n                    id\n                    url\n                    height\n                    width\n                    altText\n                  }\n                }\n              }\n            }\n            about: field(key: "about") {\n              value\n            }\n            social_links: field(key: "social_links") {\n              value\n            }\n          }\n        }\n      }\n      quote: metafield(namespace: "creator_collection", key: "quote") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            message: field(key: "message") {value}\n            creator_name: field(key: "creator_name") {value}\n          }\n        }\n      }\n      featured_product: metafield(namespace: "creator_collection", key: "featured_product") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            name: field(key: "name") {value}\n            product: field(key: "product") {\n              reference {\n                ... on Product {\n                  id\n                  handle\n                  title\n                  featuredImage {\n                    id\n                    url\n                    altText\n                    width\n                    height\n                  }\n                }\n              }\n            }\n            description: field(key: "description") {value}\n            caption: field(key: "caption") {value}\n          }\n        }\n      }\n      collection_type: metafield(namespace: "custom", key: "collection_type") {\n        value\n      }\n      products(\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n      ) {\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
+  '#graphql\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    selectedOrFirstAvailableVariant {\n      ...ProductVariant\n    }\n    variantsCount {\n      count\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n  query Collection(\n    $handle: String!\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n    $sortKey: ProductCollectionSortKeys\n    $reverse: Boolean\n  ) @inContext(country: $country, language: $language) {\n    collection(handle: $handle) {\n      id\n      handle\n      title\n      description\n      image {\n        id\n        url\n        height\n        width\n        altText\n      }\n      creator: metafield(namespace: "creator_collection", key: "creator") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            name: field(key: "name") {value}\n            image: field(key: "image") {\n              reference {\n                ... on MediaImage {\n                  image {\n                    id\n                    url\n                    height\n                    width\n                    altText\n                  }\n                }\n              }\n            }\n            about: field(key: "about") {\n              value\n            }\n            social_links: field(key: "social_links") {\n              value\n            }\n          }\n        }\n      }\n      quote: metafield(namespace: "creator_collection", key: "quote") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            message: field(key: "message") {value}\n            creator_name: field(key: "creator_name") {value}\n          }\n        }\n      }\n      featured_product: metafield(namespace: "creator_collection", key: "featured_product") {\n        reference {\n          ... on Metaobject {\n            id\n            handle\n            name: field(key: "name") {value}\n            product: field(key: "product") {\n              reference {\n                ... on Product {\n                  id\n                  handle\n                  title\n                  featuredImage {\n                    id\n                    url\n                    altText\n                    width\n                    height\n                  }\n                }\n              }\n            }\n            description: field(key: "description") {value}\n            caption: field(key: "caption") {value}\n          }\n        }\n      }\n      collection_type: metafield(namespace: "custom", key: "collection_type") {\n        value\n      }\n      products(\n        sortKey: $sortKey,\n        reverse: $reverse,\n        first: $first,\n        last: $last,\n        before: $startCursor,\n        after: $endCursor\n      ) {\n        nodes {\n          ...ProductItem\n        }\n        pageInfo {\n          hasPreviousPage\n          hasNextPage\n          endCursor\n          startCursor\n        }\n      }\n    }\n  }\n': {
     return: CollectionQuery;
     variables: CollectionQueryVariables;
   };
@@ -2143,7 +2148,7 @@ interface GeneratedQueryTypes {
     return: StoreCollectionsQuery;
     variables: StoreCollectionsQueryVariables;
   };
-  '#graphql\n  query Catalog(\n    $country: CountryCode\n    $language: LanguageCode\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    products(first: $first, last: $last, before: $startCursor, after: $endCursor) {\n      nodes {\n        ...CollectionItem\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n  #graphql\n  fragment MoneyCollectionItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment CollectionItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyCollectionItem\n      }\n      maxVariantPrice {\n        ...MoneyCollectionItem\n      }\n    }\n    creator: metafield(namespace: "creator_collection", key: "creator") {\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n        }\n      }\n    }\n  }\n\n': {
+  '#graphql\n  query Catalog(\n    $country: CountryCode\n    $language: LanguageCode\n    $sortKey: ProductSortKeys\n    $reverse: Boolean\n    $query: String\n    $first: Int\n    $last: Int\n    $startCursor: String\n    $endCursor: String\n  ) @inContext(country: $country, language: $language) {\n    products (\n      first: $first,\n      last: $last,\n      sortKey: $sortKey,\n      reverse: $reverse,\n      before: $startCursor,\n      after: $endCursor,\n      query: $query\n    ) {\n      nodes {\n        ...ProductItem\n      }\n      pageInfo {\n        hasPreviousPage\n        hasNextPage\n        startCursor\n        endCursor\n      }\n    }\n  }\n  #graphql\n  fragment MoneyProductItem on MoneyV2 {\n    amount\n    currencyCode\n  }\n  fragment ProductItem on Product {\n    id\n    handle\n    title\n    featuredImage {\n      id\n      altText\n      url\n      width\n      height\n    }\n    priceRange {\n      minVariantPrice {\n        ...MoneyProductItem\n      }\n      maxVariantPrice {\n        ...MoneyProductItem\n      }\n    }\n    selectedOrFirstAvailableVariant {\n      ...ProductVariant\n    }\n    variantsCount {\n      count\n    }\n    creator: metafield(namespace: "pp_product", key: "creator") {\n      value\n      reference {\n        ... on Metaobject {\n          id\n          handle\n          name: field(key: "name") {value}\n        }\n      }\n    }\n  }\n  #graphql\n  fragment ProductVariant on ProductVariant {\n    availableForSale\n    compareAtPrice {\n      amount\n      currencyCode\n    }\n    id\n    image {\n      __typename\n      id\n      url\n      altText\n      width\n      height\n    }\n    price {\n      amount\n      currencyCode\n    }\n    product {\n      title\n      handle\n    }\n    selectedOptions {\n      name\n      value\n    }\n    sku\n    title\n    unitPrice {\n      amount\n      currencyCode\n    }\n  }\n\n\n': {
     return: CatalogQuery;
     variables: CatalogQueryVariables;
   };
