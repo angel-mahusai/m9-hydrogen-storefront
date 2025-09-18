@@ -7,12 +7,14 @@ import {
 } from 'react-router';
 import {getPaginationVariables} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
+import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
-import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
-import {useMemo, useRef, useState} from 'react';
-import {ChevronDownIcon, FilterIcon} from '~/assets';
-import {useClickOutside} from '~/lib/utils';
-import {PRODUCT_SORT_MAPPING} from '~/lib/constants';
+import {COLLECTION_QUERY} from '~/lib/fragments';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {ChevronDownIcon, FilterIcon, MinusIcon, PlusIcon} from '~/assets';
+import {getProductFiltersAndSortVariables, useClickOutside} from '~/lib/utils';
+import {PRODUCT_COLLECTION_SORT_MAPPING} from '~/lib/constants';
+import type {Collection} from '@shopify/hydrogen/storefront-api-types';
 
 export const meta: MetaFunction<typeof loader> = () => {
   return [{title: `Project Playground | Products`}];
@@ -21,7 +23,6 @@ export const meta: MetaFunction<typeof loader> = () => {
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const sortKey = url.searchParams.get('sort_by');
-  const filterQuery = '';
 
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -29,7 +30,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData, sortKey, filterQuery};
+  return {...deferredData, ...criticalData, sortKey};
 }
 
 /**
@@ -38,28 +39,39 @@ export async function loader(args: LoaderFunctionArgs) {
  */
 async function loadCriticalData({context, request}: LoaderFunctionArgs) {
   const {storefront} = context;
+  const handle = 'all-products';
   const paginationVariables = getPaginationVariables(request, {
     pageBy: 12,
   });
 
-  const sortAndFilterVariables: Record<string, any> = {};
   const url = new URL(request.url);
-  const sortKey = url.searchParams.get(
-    'sort_by',
-  ) as keyof typeof PRODUCT_SORT_MAPPING;
-  if (sortKey && sortKey in PRODUCT_SORT_MAPPING) {
-    sortAndFilterVariables['sortKey'] = PRODUCT_SORT_MAPPING[sortKey].value;
-    sortAndFilterVariables['reverse'] = PRODUCT_SORT_MAPPING[sortKey].reverse;
-  }
 
-  const [{products}] = await Promise.all([
-    storefront.query(CATALOG_QUERY, {
-      variables: {...paginationVariables, ...sortAndFilterVariables},
+  const {filters, sortVariables} = getProductFiltersAndSortVariables(
+    url.searchParams,
+  );
+
+  const [{collection}] = await Promise.all([
+    storefront.query(COLLECTION_QUERY, {
+      variables: {
+        handle,
+        ...paginationVariables,
+        ...sortVariables,
+        filters,
+      },
+      // Add other queries here, so that they are loaded in parallel
     }),
-    // Add other queries here, so that they are loaded in parallel
   ]);
 
-  return {products};
+  if (!collection) {
+    throw new Response(`Collection ${handle} not found`, {
+      status: 404,
+    });
+  }
+
+  // The API handle might be localized, so redirect to the localized handle
+  redirectIfHandleIsLocalized(request, {handle, data: collection});
+
+  return {products: collection.products};
 }
 
 /**
@@ -80,13 +92,86 @@ export default function Collection() {
   const [isSortOpen, setIsSortOpen] = useState<boolean>(false);
   const sortDropdownRef = useRef<HTMLDivElement>(null);
   const sortBy =
-    sortKey && {}.hasOwnProperty.call(PRODUCT_SORT_MAPPING, sortKey)
-      ? PRODUCT_SORT_MAPPING[sortKey as keyof typeof PRODUCT_SORT_MAPPING]
+    sortKey && {}.hasOwnProperty.call(PRODUCT_COLLECTION_SORT_MAPPING, sortKey)
+      ? PRODUCT_COLLECTION_SORT_MAPPING[
+          sortKey as keyof typeof PRODUCT_COLLECTION_SORT_MAPPING
+        ]
       : null;
+
+  const priceFilter = products.filters.find(
+    (filter) => filter.type === 'PRICE_RANGE',
+  );
+
+  const getPrice = useCallback(
+    (type: string) => {
+      if (!priceFilter || (type !== 'min' && type !== 'max')) {
+        return undefined;
+      }
+      return (
+        searchParams?.get(`filter.v.price.${type === 'min' ? 'gte' : 'lte'}`) ||
+        JSON.parse(priceFilter.values[0].input || '')['price'][type]
+      );
+    },
+    [priceFilter, searchParams],
+  );
+
+  const [minPrice, setMinPrice] = useState<number | undefined>(getPrice('min'));
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(getPrice('max'));
+
+  useEffect(() => {
+    setMinPrice(getPrice('min'));
+    setMaxPrice(getPrice('max'));
+  }, [getPrice]);
 
   useClickOutside(sortDropdownRef, () => {
     setIsSortOpen(false);
   });
+
+  function clearFilters() {
+    let filterSearchParams;
+    if (!searchParams) {
+      filterSearchParams = new URLSearchParams(search);
+    } else {
+      filterSearchParams = searchParams;
+    }
+
+    Array.from(filterSearchParams).map(([key, value]) => {
+      if (key.startsWith('filter')) {
+        filterSearchParams.delete(key);
+      }
+    });
+
+    navigate(
+      {
+        pathname,
+        search: filterSearchParams.toString(),
+      },
+      {preventScrollReset: true},
+    );
+  }
+
+  interface FilterClear {
+    filterId: string;
+    filterValue?: string;
+  }
+
+  function clearFilter(filtersToClear: FilterClear[]) {
+    filtersToClear.map((filter) => {
+      if (filter.filterValue) {
+        searchParams.delete(filter.filterId, filter.filterValue);
+      } else {
+        searchParams.delete(filter.filterId);
+      }
+    });
+
+    navigate(
+      {
+        pathname,
+        search: searchParams.toString(),
+      },
+      {preventScrollReset: true},
+    );
+  }
 
   return (
     <div className="collection">
@@ -126,17 +211,20 @@ export default function Collection() {
                 />
               </button>
               <div className={`sort-options${isSortOpen ? ' open' : ''}`}>
-                {Object.entries(PRODUCT_SORT_MAPPING).map(
+                {Object.entries(PRODUCT_COLLECTION_SORT_MAPPING).map(
                   ([key, sortOption]) => (
                     <button
                       key={key}
                       onClick={() => {
                         setIsSortOpen(false);
                         searchParams.set('sort_by', key);
-                        navigate({
-                          pathname,
-                          search: searchParams.toString(),
-                        });
+                        navigate(
+                          {
+                            pathname,
+                            search: searchParams.toString(),
+                          },
+                          {preventScrollReset: true},
+                        );
                       }}
                       style={
                         searchParams.get('sort_by') === key
@@ -157,7 +245,86 @@ export default function Collection() {
         </div>
         <div className="products-grid-wrapper">
           <div className={`product-filters${isFilterOpen ? ' open' : ''}`}>
-            FILTERS
+            <div>
+              {searchParams && (
+                <div className="active-filters">
+                  {searchParams.size >
+                    1 + (searchParams.has('sort_by') ? 1 : 0) && (
+                    <button onClick={clearFilters}>Clear All</button>
+                  )}
+                  {(products.filters || []).map((filter) => {
+                    if (
+                      filter.type === 'PRICE_RANGE' &&
+                      (searchParams.has('filter.v.price.gte') ||
+                        searchParams.has('filter.v.price.lte'))
+                    ) {
+                      return (
+                        <button
+                          key={`active-filter-${filter.id}`}
+                          onClick={() => {
+                            clearFilter([
+                              {filterId: 'filter.v.price.gte'},
+                              {filterId: 'filter.v.price.lte'},
+                            ]);
+                          }}
+                        >
+                          {`₱${searchParams.get('filter.v.price.gte')} - ₱${searchParams.get('filter.v.price.lte')}`}
+                        </button>
+                      );
+                    } else if (filter.type === 'LIST') {
+                      return (
+                        <>
+                          {filter.values.map((filterOption) => {
+                            const searchParamValue = filter.id.startsWith(
+                              'filter.p.m.',
+                            )
+                              ? `${filterOption.label}-${filterOption.id.split('-').pop()}`
+                              : filterOption.label;
+                            return (
+                              searchParams.has(filter.id, searchParamValue) && (
+                                <button
+                                  key={`active-filter-${filterOption.id}`}
+                                  onClick={() => {
+                                    clearFilter([
+                                      {
+                                        filterId: filter.id,
+                                        filterValue: searchParamValue,
+                                      },
+                                    ]);
+                                  }}
+                                >
+                                  {filterOption.label}
+                                </button>
+                              )
+                            );
+                          })}
+                        </>
+                      );
+                    }
+                    return <></>;
+                  })}
+                </div>
+              )}
+              {(products.filters || []).map((filter) => {
+                return (
+                  <FilterListOptions
+                    filter={filter}
+                    searchParams={searchParams}
+                    key={filter.id}
+                    minPrice={minPrice}
+                    maxPrice={maxPrice}
+                    setMinPrice={setMinPrice}
+                    setMaxPrice={setMaxPrice}
+                  />
+                );
+              })}
+            </div>
+            <button
+              className="button reset-filters"
+              onClick={() => clearFilters()}
+            >
+              RESET
+            </button>
           </div>
           <PaginatedResourceSection
             connection={products}
@@ -177,38 +344,152 @@ export default function Collection() {
   );
 }
 
-// NOTE: https://shopify.dev/docs/api/storefront/latest/objects/product
-const CATALOG_QUERY = `#graphql
-  query Catalog(
-    $country: CountryCode
-    $language: LanguageCode
-    $sortKey: ProductSortKeys
-    $reverse: Boolean
-    $query: String
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-  ) @inContext(country: $country, language: $language) {
-    products (
-      first: $first,
-      last: $last,
-      sortKey: $sortKey,
-      reverse: $reverse,
-      before: $startCursor,
-      after: $endCursor,
-      query: $query
-    ) {
-      nodes {
-        ...ProductItem
-      }
-      pageInfo {
-        hasPreviousPage
-        hasNextPage
-        startCursor
-        endCursor
-      }
+function FilterListOptions({
+  filter,
+  searchParams,
+  minPrice,
+  maxPrice,
+  setMinPrice,
+  setMaxPrice,
+}: {
+  filter: Collection['products']['filters'][0];
+  searchParams?: URLSearchParams;
+  minPrice: number | undefined;
+  maxPrice: number | undefined;
+  setMinPrice: React.Dispatch<React.SetStateAction<number | undefined>>;
+  setMaxPrice: React.Dispatch<React.SetStateAction<number | undefined>>;
+}) {
+  const navigate = useNavigate();
+  const {pathname, search} = useLocation();
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  if (!filter) return null;
+
+  function handlePriceSet() {
+    let filterSearchParams;
+    if (!searchParams) {
+      filterSearchParams = new URLSearchParams(search);
+    } else {
+      filterSearchParams = searchParams;
     }
+
+    filterSearchParams.set(`${filter.id}.gte`, (minPrice || '0').toString());
+    filterSearchParams.set(`${filter.id}.lte`, (maxPrice || '').toString());
+    navigate(
+      {
+        pathname,
+        search: filterSearchParams.toString(),
+      },
+      {preventScrollReset: true},
+    );
   }
-  ${PRODUCT_ITEM_FRAGMENT}
-` as const;
+
+  function handleAddFilter(value: string) {
+    let filterSearchParams;
+    if (!searchParams) {
+      filterSearchParams = new URLSearchParams(search);
+    } else {
+      filterSearchParams = searchParams;
+    }
+
+    if (filterSearchParams.has(filter.id, value)) {
+      filterSearchParams.delete(filter.id, value);
+    } else {
+      filterSearchParams.append(filter.id, value);
+    }
+
+    navigate(
+      {
+        pathname,
+        search: filterSearchParams.toString(),
+      },
+      {preventScrollReset: true},
+    );
+  }
+
+  return (
+    <div className={`filter-category${open ? ' open' : ''}`}>
+      <div className="filter-label">
+        <h4>{filter.label}</h4>
+        <button onClick={() => setOpen(!open)}>
+          <PlusIcon
+            width={18}
+            height={18}
+            stroke="rgba(var(--color-secondary-text), 0.5)"
+            viewBox="0 0 24 24"
+          />
+          <MinusIcon
+            width={18}
+            height={18}
+            stroke="rgba(var(--color-secondary-text), 0.5)"
+            viewBox="0 0 24 24"
+          />
+        </button>
+      </div>
+      {filter.type === 'LIST' ? (
+        <ul className="filter-options">
+          {filter.values.map((filterOption) => {
+            const searchParamValue = filter.id.startsWith('filter.p.m.')
+              ? `${filterOption.label}-${filterOption.id.split('-').pop()}`
+              : filterOption.label;
+            return (
+              <li key={filterOption.id}>
+                <input
+                  type="checkbox"
+                  onClick={() => handleAddFilter(searchParamValue)}
+                  checked={
+                    searchParams
+                      ? searchParams.has(filter.id, searchParamValue)
+                      : false
+                  }
+                />
+                <span>{filterOption.label}</span>
+              </li>
+            );
+          })}
+        </ul>
+      ) : filter.type === 'PRICE_RANGE' ? (
+        <div className="price-filter">
+          <div className="price-input-wrapper">
+            <span className="currency-symbol">₱</span>
+            <input
+              className="price-range"
+              id="price-range-min"
+              value={minPrice || 0}
+              onChange={(e) =>
+                setMinPrice(
+                  Number(e.target.value) < 0
+                    ? undefined
+                    : Number(e.target.value),
+                )
+              }
+              onBlur={() => handlePriceSet()}
+              type="text"
+            />
+          </div>
+          <span>-</span>
+          <div className="price-input-wrapper">
+            <span className="currency-symbol">₱</span>
+            <input
+              className="price-range"
+              id="price-range-max"
+              value={maxPrice || ''}
+              onChange={(e) =>
+                setMaxPrice(
+                  Number(e.target.value) < 0
+                    ? undefined
+                    : Number(e.target.value),
+                )
+              }
+              onBlur={() => handlePriceSet()}
+              type="text"
+            />
+          </div>
+        </div>
+      ) : (
+        <></>
+      )}
+    </div>
+  );
+}
