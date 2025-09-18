@@ -369,3 +369,132 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
   }
   ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;
+
+// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
+export const COLLECTION_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  query Collection(
+    $handle: String!
+    $country: CountryCode
+    $language: LanguageCode
+    $first: Int
+    $last: Int
+    $startCursor: String
+    $endCursor: String
+    $sortKey: ProductCollectionSortKeys
+    $reverse: Boolean
+    $filters: [ProductFilter!]
+  ) @inContext(country: $country, language: $language) {
+    collection(handle: $handle) {
+      id
+      handle
+      title
+      description
+      image {
+        id
+        url
+        height
+        width
+        altText
+      }
+      creator: metafield(namespace: "creator_collection", key: "creator") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            name: field(key: "name") {value}
+            image: field(key: "image") {
+              reference {
+                ... on MediaImage {
+                  image {
+                    id
+                    url
+                    height
+                    width
+                    altText
+                  }
+                }
+              }
+            }
+            about: field(key: "about") {
+              value
+            }
+            social_links: field(key: "social_links") {
+              value
+            }
+          }
+        }
+      }
+      quote: metafield(namespace: "creator_collection", key: "quote") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            message: field(key: "message") {value}
+            creator_name: field(key: "creator_name") {value}
+          }
+        }
+      }
+      featured_product: metafield(namespace: "creator_collection", key: "featured_product") {
+        reference {
+          ... on Metaobject {
+            id
+            handle
+            name: field(key: "name") {value}
+            product: field(key: "product") {
+              reference {
+                ... on Product {
+                  id
+                  handle
+                  title
+                  featuredImage {
+                    id
+                    url
+                    altText
+                    width
+                    height
+                  }
+                }
+              }
+            }
+            description: field(key: "description") {value}
+            caption: field(key: "caption") {value}
+          }
+        }
+      }
+      collection_type: metafield(namespace: "custom", key: "collection_type") {
+        value
+      }
+      products(
+        sortKey: $sortKey,
+        reverse: $reverse,
+        filters: $filters,
+        first: $first,
+        last: $last,
+        before: $startCursor,
+        after: $endCursor
+      ) {
+        nodes {
+          ...ProductItem
+        }
+        filters {
+          id
+          label
+          type
+          values {
+            count
+            id
+            input
+            label
+          }
+        }
+        pageInfo {
+          hasPreviousPage
+          hasNextPage
+          endCursor
+          startCursor
+        }
+      }
+    }
+  }
+` as const;

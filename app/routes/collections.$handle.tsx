@@ -10,16 +10,13 @@ import {getPaginationVariables, Analytics} from '@shopify/hydrogen';
 import {PaginatedResourceSection} from '~/components/PaginatedResourceSection';
 import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {ProductItem} from '~/components/ProductItem';
-import {PRODUCT_ITEM_FRAGMENT} from '~/lib/fragments';
-import {useEffect, useMemo, useRef, useState} from 'react';
+import {COLLECTION_QUERY} from '~/lib/fragments';
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ChevronDownIcon, FilterIcon, MinusIcon, PlusIcon} from '~/assets';
-import {useClickOutside} from '~/lib/utils';
+import {getProductFiltersAndSortVariables, useClickOutside} from '~/lib/utils';
 import {PRODUCT_COLLECTION_SORT_MAPPING} from '~/lib/constants';
 import ImageWithText from '~/components/ImageWithText';
-import type {
-  Collection,
-  ProductFilter,
-} from '@shopify/hydrogen/storefront-api-types';
+import type {Collection} from '@shopify/hydrogen/storefront-api-types';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -30,7 +27,6 @@ export const meta: MetaFunction<typeof loader> = ({data}) => {
 export async function loader(args: LoaderFunctionArgs) {
   const url = new URL(args.request.url);
   const sortKey = url.searchParams.get('sort_by');
-  const filterQuery = '';
 
   // Start fetching non-critical data without blocking time to first byte
   const deferredData = loadDeferredData(args);
@@ -38,7 +34,7 @@ export async function loader(args: LoaderFunctionArgs) {
   // Await the critical data required to render initial state of the page
   const criticalData = await loadCriticalData(args);
 
-  return {...deferredData, ...criticalData, sortKey, filterQuery};
+  return {...deferredData, ...criticalData, sortKey};
 }
 
 /**
@@ -60,53 +56,11 @@ async function loadCriticalData({
     throw redirect('/collections');
   }
 
-  const sortVariables: Record<string, any> = {};
-  // const filterVariables: Record<string, any> = {};
-  const filters: ProductFilter[] = [];
-  const priceFilter: Record<string, any> = {};
-
   const url = new URL(request.url);
-  const sortKey = url.searchParams.get(
-    'sort_by',
-  ) as keyof typeof PRODUCT_COLLECTION_SORT_MAPPING;
 
-  Array.from(url.searchParams).map(([key, value]) => {
-    if (key === 'sort_by' && value in PRODUCT_COLLECTION_SORT_MAPPING) {
-      sortVariables['sortKey'] = PRODUCT_COLLECTION_SORT_MAPPING[sortKey].value;
-      sortVariables['reverse'] =
-        PRODUCT_COLLECTION_SORT_MAPPING[sortKey].reverse;
-      return;
-    }
-
-    if (!key.startsWith('filter')) {
-      return;
-    }
-
-    if (key.startsWith('filter.v.price')) {
-      const priceBoundary = key.endsWith('.gte') ? 'min' : 'max';
-      priceFilter[priceBoundary] = Number(value);
-    } else if (key.startsWith('filter.v.availability')) {
-      filters.push({available: value === 'In stock' ? true : false});
-    } else if (key.startsWith('filter.v.option')) {
-      const variantName = key.split('.')[3];
-      filters.push({variantOption: {name: variantName, value}});
-    } else if (key.startsWith('filter.p.m.')) {
-      const metaobjectNamespace = key.split('.')[3];
-      const metaobjectKey = key.split('.')[4];
-      const metaobjectValue = `gid:\/\/shopify\/Metaobject\/${value.split('-').pop()}`;
-      filters.push({
-        productMetafield: {
-          namespace: metaobjectNamespace,
-          key: metaobjectKey,
-          value: metaobjectValue,
-        },
-      });
-    }
-  });
-
-  if (Object.keys(priceFilter).length > 0) {
-    filters.push({price: priceFilter});
-  }
+  const {filters, sortVariables} = getProductFiltersAndSortVariables(
+    url.searchParams,
+  );
 
   const [{collection}] = await Promise.all([
     storefront.query(COLLECTION_QUERY, {
@@ -115,7 +69,6 @@ async function loadCriticalData({
         ...paginationVariables,
         ...sortVariables,
         filters,
-        // filters: filterVariables,
       },
       // Add other queries here, so that they are loaded in parallel
     }),
@@ -151,7 +104,7 @@ interface SocialLink {
 }
 
 export default function Collection() {
-  const {collection, filters, sortKey} = useLoaderData<typeof loader>();
+  const {collection, sortKey} = useLoaderData<typeof loader>();
   const {pathname, search} = useLocation();
   const searchParams = useMemo(() => new URLSearchParams(search), [search]);
   const navigate = useNavigate();
@@ -168,29 +121,27 @@ export default function Collection() {
   const priceFilter = collection.products.filters.find(
     (filter) => filter.type === 'PRICE_RANGE',
   );
-  const [minPrice, setMinPrice] = useState<number | undefined>(
-    priceFilter
-      ? searchParams?.get('filter.v.price.gte') ||
-          JSON.parse(priceFilter.values[0].input || '')['price']['min']
-      : undefined,
-  );
-  const [maxPrice, setMaxPrice] = useState<number | undefined>(
-    priceFilter
-      ? searchParams?.get('filter.v.price.lte') ||
-          JSON.parse(priceFilter.values[0].input || '')['price']['max']
-      : undefined,
+
+  const getPrice = useCallback(
+    (type: string) => {
+      if (!priceFilter || (type !== 'min' && type !== 'max')) {
+        return undefined;
+      }
+      return (
+        searchParams?.get(`filter.v.price.${type === 'min' ? 'gte' : 'lte'}`) ||
+        JSON.parse(priceFilter.values[0].input || '')['price'][type]
+      );
+    },
+    [priceFilter, searchParams],
   );
 
+  const [minPrice, setMinPrice] = useState<number | undefined>(getPrice('min'));
+  const [maxPrice, setMaxPrice] = useState<number | undefined>(getPrice('max'));
+
   useEffect(() => {
-    setMinPrice(
-      searchParams?.get('filter.v.price.gte') ||
-        JSON.parse(priceFilter.values[0].input || '')['price']['min'],
-    );
-    setMaxPrice(
-      searchParams?.get('filter.v.price.lte') ||
-        JSON.parse(priceFilter.values[0].input || '')['price']['max'],
-    );
-  }, [priceFilter, searchParams]);
+    setMinPrice(getPrice('min'));
+    setMaxPrice(getPrice('max'));
+  }, [getPrice]);
 
   const collectionType = collection.collection_type?.value;
   const collectionImage =
@@ -668,133 +619,3 @@ function FilterListOptions({
     </div>
   );
 }
-
-// NOTE: https://shopify.dev/docs/api/storefront/2022-04/objects/collection
-const COLLECTION_QUERY = `#graphql
-  ${PRODUCT_ITEM_FRAGMENT}
-  query Collection(
-    $handle: String!
-    $country: CountryCode
-    $language: LanguageCode
-    $first: Int
-    $last: Int
-    $startCursor: String
-    $endCursor: String
-    $sortKey: ProductCollectionSortKeys
-    $reverse: Boolean
-    $filters: [ProductFilter!]
-  ) @inContext(country: $country, language: $language) {
-    collection(handle: $handle) {
-      id
-      handle
-      title
-      description
-      image {
-        id
-        url
-        height
-        width
-        altText
-      }
-      creator: metafield(namespace: "creator_collection", key: "creator") {
-        reference {
-          ... on Metaobject {
-            id
-            handle
-            name: field(key: "name") {value}
-            image: field(key: "image") {
-              reference {
-                ... on MediaImage {
-                  image {
-                    id
-                    url
-                    height
-                    width
-                    altText
-                  }
-                }
-              }
-            }
-            about: field(key: "about") {
-              value
-            }
-            social_links: field(key: "social_links") {
-              value
-            }
-          }
-        }
-      }
-      quote: metafield(namespace: "creator_collection", key: "quote") {
-        reference {
-          ... on Metaobject {
-            id
-            handle
-            message: field(key: "message") {value}
-            creator_name: field(key: "creator_name") {value}
-          }
-        }
-      }
-      featured_product: metafield(namespace: "creator_collection", key: "featured_product") {
-        reference {
-          ... on Metaobject {
-            id
-            handle
-            name: field(key: "name") {value}
-            product: field(key: "product") {
-              reference {
-                ... on Product {
-                  id
-                  handle
-                  title
-                  featuredImage {
-                    id
-                    url
-                    altText
-                    width
-                    height
-                  }
-                }
-              }
-            }
-            description: field(key: "description") {value}
-            caption: field(key: "caption") {value}
-          }
-        }
-      }
-      collection_type: metafield(namespace: "custom", key: "collection_type") {
-        value
-      }
-      products(
-        sortKey: $sortKey,
-        reverse: $reverse,
-        filters: $filters,
-        first: $first,
-        last: $last,
-        before: $startCursor,
-        after: $endCursor
-      ) {
-        nodes {
-          ...ProductItem
-        }
-        filters {
-          id
-          label
-          type
-          values {
-            count
-            id
-            input
-            label
-            swatch {color}
-          }
-        }
-        pageInfo {
-          hasPreviousPage
-          hasNextPage
-          endCursor
-          startCursor
-        }
-      }
-    }
-  }
-` as const;
