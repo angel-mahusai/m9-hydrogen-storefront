@@ -350,6 +350,28 @@ export const PRODUCT_ITEM_FRAGMENT = `#graphql
         ...MoneyProductItem
       }
     }
+    encodedVariantExistence
+    encodedVariantAvailability
+    options {
+      name
+      optionValues {
+        name
+        firstSelectableVariant {
+          ...ProductVariant
+        }
+        swatch {
+          color
+        }
+      }
+    }
+    adjacentVariants {
+      ...ProductVariant
+    }
+    variants (first: 250) {
+      nodes {
+        ...ProductVariant
+      }
+    }
     selectedOrFirstAvailableVariant {
       ...ProductVariant
     }

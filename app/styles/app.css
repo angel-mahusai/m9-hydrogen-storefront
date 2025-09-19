@@ -134,7 +134,8 @@ button {
 }
 
 .button,
-.product-main .product-form .add-to-cart button {
+.product-main .product-form .add-to-cart button,
+.aside--product-form .product-form .add-to-cart button {
   display: inline-flex;
   justify-content: center;
   align-items: center;
@@ -154,7 +155,8 @@ button {
   border-radius: var(--button-border-radius);
 }
 
-.product-main .product-form .add-to-cart button:disabled {
+.product-main .product-form .add-to-cart button:disabled,
+.aside--product-form .product-form .add-to-cart button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -2188,14 +2190,16 @@ main:has(.product) {
   color: inherit;
 }
 
-.product-main h1 {
+.product-main h1,
+.aside--product-form h1 {
   margin-bottom: var(--padding-inner);
   @media (max-width: 44.99em) {
     font-size: 1.8rem;
   }
 }
 
-.product-main .product-price {
+.product-main .product-price,
+.aside--product-form .product-price {
   margin-bottom: var(--padding-inner);
 }
 
@@ -2277,8 +2281,9 @@ main:has(.product) {
   width: 100%;
 }
 
-.product-main .product-form .purchase-controls {
-  margin-top: var(--padding-inner);
+.product-main .product-form .purchase-controls,
+.aside--product-form .product-form .purchase-controls {
+margin-top: var(--padding-inner);
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -2287,7 +2292,8 @@ main:has(.product) {
   gap: var(--padding-inner);
 }
 
-.product-main .product-form .purchase-controls .quantity-wrapper {
+.product-main .product-form .purchase-controls .quantity-wrapper,
+.aside--product-form .product-form .purchase-controls .quantity-wrapper {
   position: relative;
   display: flex;
   align-items: center;
@@ -2365,7 +2371,10 @@ main:has(.product) {
 
 .product-main .product-form .add-to-cart,
 .product-main .product-form .add-to-cart form,
-.product-main .product-form .add-to-cart button {
+.product-main .product-form .add-to-cart button,
+.aside--product-form .product-form .add-to-cart,
+.aside--product-form .product-form .add-to-cart form,
+.aside--product-form .product-form .add-to-cart button {
   width: 100%;
   max-width: 100%;
 }
