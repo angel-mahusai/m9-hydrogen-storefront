@@ -233,9 +233,6 @@ export default function Product() {
     const element = addRecentlyViewedProduct.current;
     if (element) {
       addRecentlyViewedProduct.current.click();
-      console.log('RECENTLY VIEWED', recentlyViewedQuery);
-      console.log('CLICKED');
-      console.log()
     }
   }, [addRecentlyViewedProduct, product.handle]);
 
@@ -544,7 +541,7 @@ const PRODUCT_FRAGMENT = `#graphql
   ${PRODUCT_VARIANT_FRAGMENT}
 ` as const;
 
-const PRODUCT_QUERY = `#graphql
+export const PRODUCT_QUERY = `#graphql
   query Product(
     $country: CountryCode
     $handle: String!

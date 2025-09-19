@@ -1,11 +1,11 @@
-import {Link, useNavigate} from 'react-router';
-import {Image, Money} from '@shopify/hydrogen';
+import {Link} from 'react-router';
+import {
+  getAdjacentAndFirstAvailableVariants,
+  Image,
+  useOptimisticVariant,
+} from '@shopify/hydrogen';
 import {AddToCartButton} from './AddToCartButton';
-import type {
-  ProductItemFragment,
-  CollectionItemFragment,
-  RecommendedProductFragment,
-} from 'storefrontapi.generated';
+import type {ProductItemFragment} from 'storefrontapi.generated';
 import {useVariantUrl} from '~/lib/variants';
 import {useAside} from './Aside';
 import {ProductPrice} from './ProductPrice';
@@ -14,16 +14,26 @@ export function ProductItem({
   product,
   loading,
 }: {
-  product:
-    | CollectionItemFragment
-    | ProductItemFragment
-    | RecommendedProductFragment;
+  product: ProductItemFragment;
   loading?: 'eager' | 'lazy';
 }) {
-  const {open} = useAside();
+  const {open, setProduct, setSelectedVariant} = useAside();
+
   const variantUrl = useVariantUrl(product.handle);
   const image = product.featuredImage;
-  const selectedVariant = product.selectedOrFirstAvailableVariant;
+  const selectedVariant = useOptimisticVariant(
+    product.selectedOrFirstAvailableVariant,
+    getAdjacentAndFirstAvailableVariants(product),
+  );
+
+  let withOptions: boolean = false;
+
+  product.options.map((option) => {
+    // If there is only a single value in the option values, don't display the option
+    if (option.optionValues.length > 1) {
+      withOptions = true;
+    }
+  });
 
   return (
     <div className="product-item" key={product.id}>
@@ -40,25 +50,39 @@ export function ProductItem({
           </Link>
         )}
         <div className="quick-add-button">
-          <AddToCartButton
-            disabled={!selectedVariant || !selectedVariant.availableForSale}
-            onClick={() => {
-              open('cart');
-            }}
-            lines={
-              selectedVariant
-                ? [
-                    {
-                      merchandiseId: selectedVariant.id,
-                      quantity: 1,
-                      selectedVariant,
-                    },
-                  ]
-                : []
-            }
-          >
-            {selectedVariant?.availableForSale ? 'Quick Add' : 'Sold out'}
-          </AddToCartButton>
+          {withOptions ? (
+            <>
+              <button
+                onClick={() => {
+                  setProduct(product);
+                  setSelectedVariant(selectedVariant);
+                  open('product-form');
+                }}
+              >
+                Quick Add
+              </button>
+            </>
+          ) : (
+            <AddToCartButton
+              disabled={!selectedVariant || !selectedVariant.availableForSale}
+              onClick={() => {
+                open('cart');
+              }}
+              lines={
+                selectedVariant
+                  ? [
+                      {
+                        merchandiseId: selectedVariant.id,
+                        quantity: 1,
+                        selectedVariant,
+                      },
+                    ]
+                  : []
+              }
+            >
+              {selectedVariant?.availableForSale ? 'Quick Add' : 'Sold out'}
+            </AddToCartButton>
+          )}
         </div>
       </div>
       {selectedVariant?.compareAtPrice && selectedVariant?.availableForSale && (
@@ -67,7 +91,7 @@ export function ProductItem({
       <Link className="product-content" prefetch="intent" to={variantUrl}>
         <h4>{product.title}</h4>
         {product.creator && (
-          <small>{product.creator.reference.name.value}</small>
+          <small>{product.creator?.reference?.name?.value}</small>
         )}
         <small>
           {selectedVariant?.availableForSale ? (

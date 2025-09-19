@@ -6,13 +6,27 @@ import {
   useState,
 } from 'react';
 import {XIcon} from '../assets';
+import {
+  ProductItemFragment,
+  ProductVariantFragment,
+} from 'storefrontapi.generated';
 
-export type AsideType = 'search' | 'cart' | 'mobile' | 'closed' | 'submenu';
+export type AsideType =
+  | 'search'
+  | 'cart'
+  | 'mobile'
+  | 'closed'
+  | 'submenu'
+  | 'product-form';
 type AsideLocation = 'top' | 'left' | 'right';
 type AsideContextValue = {
   type: AsideType;
+  product: ProductItemFragment | undefined;
+  selectedVariant: ProductVariantFragment | undefined;
   open: (mode: AsideType) => void;
   close: () => void;
+  setProduct: (product: ProductItemFragment | undefined) => void;
+  setSelectedVariant: (variant: ProductVariantFragment | undefined) => void;
 };
 
 /**
@@ -83,13 +97,26 @@ const AsideContext = createContext<AsideContextValue | null>(null);
 
 Aside.Provider = function AsideProvider({children}: {children: ReactNode}) {
   const [type, setType] = useState<AsideType>('closed');
-
+  const [product, setProduct] = useState<ProductItemFragment | undefined>(
+    undefined,
+  );
+  const [selectedVariant, setSelectedVariant] = useState<
+    ProductVariantFragment | undefined
+  >(undefined);
   return (
     <AsideContext.Provider
       value={{
         type,
+        product,
+        selectedVariant,
         open: setType,
-        close: () => setType('closed'),
+        close: () => {
+          setType('closed');
+          setProduct(undefined);
+          setSelectedVariant(undefined);
+        },
+        setProduct,
+        setSelectedVariant,
       }}
     >
       {children}
