@@ -1,5 +1,11 @@
 import {type LoaderFunctionArgs} from '@shopify/remix-oxygen';
-import {Await, NavLink, useLoaderData, type MetaFunction} from 'react-router';
+import {
+  Await,
+  NavLink,
+  useFetcher,
+  useLoaderData,
+  type MetaFunction,
+} from 'react-router';
 import {
   getSelectedProductOptions,
   Analytics,
@@ -16,11 +22,15 @@ import {redirectIfHandleIsLocalized} from '~/lib/redirect';
 import {PRODUCT_ITEM_FRAGMENT, PRODUCT_VARIANT_FRAGMENT} from '~/lib/fragments';
 import ImageWithText from '~/components/ImageWithText';
 import Tabs from '~/components/Tabs';
-import {RecommendedProductsQuery} from 'storefrontapi.generated';
-import {Suspense} from 'react';
+import {
+  RecentlyViewedQuery,
+  RecommendedProductsQuery,
+} from 'storefrontapi.generated';
+import {Suspense, useEffect, useRef} from 'react';
 import {ProductItem} from '~/components/ProductItem';
 import Carousel from '~/components/Carousel';
 import {ComplementaryProductItem} from '~/components/ComplementaryProductItem';
+import {RECENTLY_VIEWED_PRODUCTS_COUNT} from '~/lib/constants';
 
 export const meta: MetaFunction<typeof loader> = ({data}) => {
   return [
@@ -111,15 +121,67 @@ function loadDeferredData({context, params}: LoaderFunctionArgs) {
       return null;
     });
 
+  const recentlyViewedQuery = context.session.get(
+    'recentlyViewedProductsTitles',
+  )
+    ? `(title:${context.session.get('recentlyViewedProductsTitles').toString().replaceAll(',', ') OR (title:')})`
+    : '';
+
+  const recentlyViewedProducts = context.storefront
+    .query(RECENTLY_VIEWED_QUERY, {
+      variables: {
+        query: recentlyViewedQuery,
+        first: RECENTLY_VIEWED_PRODUCTS_COUNT,
+      },
+    })
+    .catch((error) => {
+      // Log query errors, but don't throw them so the page can still render
+      console.error(error);
+      return null;
+    });
+
   return {
     relatedProducts,
     complementaryProducts,
+    recentlyViewedProducts,
+    recentlyViewedQuery,
   };
 }
 
+function SaveRecentlyViewedProduct({
+  title,
+  addProductRef,
+}: {
+  title: string;
+  addProductRef: React.RefObject<HTMLButtonElement>;
+}) {
+  const {Form} = useFetcher();
+
+  return (
+    <>
+      <Form
+        className="recently-viewed-form"
+        method="post"
+        action="/recent"
+        style={{visibility: 'hidden', height: 0, opacity: 0}}
+      >
+        <input id="title" name="title" value={title} readOnly />
+        <button ref={addProductRef} type="submit" />
+      </Form>
+    </>
+  );
+}
+
 export default function Product() {
-  const {product, relatedProducts, complementaryProducts} =
-    useLoaderData<typeof loader>();
+  const addRecentlyViewedProduct: React.RefObject<HTMLButtonElement> =
+    useRef(null);
+  const {
+    product,
+    relatedProducts,
+    complementaryProducts,
+    recentlyViewedProducts,
+    recentlyViewedQuery,
+  } = useLoaderData<typeof loader>();
   // Optimistically selects a variant with given available variant information
   const selectedVariant = useOptimisticVariant(
     product.selectedOrFirstAvailableVariant,
@@ -167,8 +229,22 @@ export default function Product() {
   const creatorDescription = creator?.about?.value;
   const {title} = product;
 
+  useEffect(() => {
+    const element = addRecentlyViewedProduct.current;
+    if (element) {
+      addRecentlyViewedProduct.current.click();
+      console.log('RECENTLY VIEWED', recentlyViewedQuery);
+      console.log('CLICKED');
+      console.log()
+    }
+  }, [addRecentlyViewedProduct, product.handle]);
+
   return (
     <>
+      <SaveRecentlyViewedProduct
+        title={product.title}
+        addProductRef={addRecentlyViewedProduct}
+      />
       <div className="product">
         <div className="product-image-wrapper">
           <Carousel
@@ -309,7 +385,9 @@ export default function Product() {
           {
             id: 'recently-viewed',
             title: 'Recently Viewed',
-            content: <div></div>,
+            content: (
+              <RecentlyViewedProducts products={recentlyViewedProducts} />
+            ),
           },
         ]}
       />
@@ -333,6 +411,33 @@ function RelatedProducts({
                   ? response?.productRecommendations?.map((product) => (
                       <ProductItem key={product.id} product={product} />
                     ))
+                  : null}
+              </Carousel>
+            );
+          }}
+        </Await>
+      </Suspense>
+      <br />
+    </div>
+  );
+}
+
+function RecentlyViewedProducts({
+  products,
+}: {
+  products: Promise<RecentlyViewedQuery | null>;
+}) {
+  return (
+    <div className="recommended-products">
+      <Suspense fallback={<div>Loading...</div>}>
+        <Await resolve={products}>
+          {(response) => {
+            return (
+              <Carousel slidesToShow={3.5} infinite={false}>
+                {response
+                  ? response?.products?.nodes.map((product) => {
+                      return <ProductItem key={product.id} product={product} />;
+                    })
                   : null}
               </Carousel>
             );
@@ -464,6 +569,22 @@ const RECOMMENDED_PRODUCTS_QUERY = `#graphql
     @inContext(country: $country, language: $language) {
     productRecommendations(intent: $intent, productHandle: $handle) {
         ...ProductItem
+    }
+  }
+` as const;
+
+const RECENTLY_VIEWED_QUERY = `#graphql
+  ${PRODUCT_ITEM_FRAGMENT}
+  query RecentlyViewed(
+    $country: CountryCode
+    $language: LanguageCode
+    $query: String
+    $first: Int
+  ) @inContext(country: $country, language: $language) {
+    products(query: $query, first: $first) {
+        nodes {
+          ...ProductItem
+        }
     }
   }
 ` as const;

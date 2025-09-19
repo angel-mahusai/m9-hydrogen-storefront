@@ -29,6 +29,7 @@ export class AppSession implements HydrogenSession {
         path: '/',
         sameSite: 'lax',
         secrets,
+        secure: false,
       },
     });
 

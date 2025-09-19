@@ -84,3 +84,5 @@ export const PRODUCT_COLLECTION_SORT_MAPPING = {
     reverse: true,
   },
 };
+
+export const RECENTLY_VIEWED_PRODUCTS_COUNT = 4;
