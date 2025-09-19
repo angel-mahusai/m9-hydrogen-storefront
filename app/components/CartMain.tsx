@@ -53,16 +53,26 @@ function CartEmpty({
 }) {
   const {close} = useAside();
   return (
-    <div hidden={hidden}>
-      <br />
-      <p>
-        Looks like you haven&rsquo;t added anything yet, let&rsquo;s get you
-        started!
-      </p>
-      <br />
-      <Link to="/collections" onClick={close} prefetch="viewport">
-        Continue shopping →
-      </Link>
+    <div className="empty-cart" hidden={hidden}>
+      <p>Your cart is empty. Keep exploring!</p>
+      <div className="button-container">
+        <Link
+          to="/collections"
+          onClick={close}
+          prefetch="viewport"
+          className="button"
+        >
+          All Creators
+        </Link>
+        <Link
+          to="/collections/all"
+          onClick={close}
+          prefetch="viewport"
+          className="button"
+        >
+          All Products
+        </Link>
+      </div>
     </div>
   );
 }
