@@ -443,6 +443,7 @@ function FilterListOptions({
                       ? searchParams.has(filter.id, searchParamValue)
                       : false
                   }
+                  readOnly
                 />
                 <span>{filterOption.label}</span>
               </li>

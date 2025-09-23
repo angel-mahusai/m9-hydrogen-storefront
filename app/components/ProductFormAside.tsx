@@ -94,7 +94,7 @@ function ProductForm({
                   return (
                     <Link
                       className="product-options-item"
-                      key={option.name + name}
+                      key={name}
                       prefetch="intent"
                       preventScrollReset
                       replace
@@ -121,7 +121,7 @@ function ProductForm({
                       className={`product-options-item${
                         exists && !selected ? ' link' : ''
                       }`}
-                      key={option.name + name}
+                      key={name}
                       disabled={!exists}
                       onClick={() => {
                         selectOption(option.name, value);

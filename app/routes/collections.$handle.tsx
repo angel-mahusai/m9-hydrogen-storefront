@@ -390,34 +390,30 @@ export default function Collection() {
                         </button>
                       );
                     } else if (filter.type === 'LIST') {
-                      return (
-                        <>
-                          {filter.values.map((filterOption) => {
-                            const searchParamValue = filter.id.startsWith(
-                              'filter.p.m.',
-                            )
-                              ? `${filterOption.label}-${filterOption.id.split('-').pop()}`
-                              : filterOption.label;
-                            return (
-                              searchParams.has(filter.id, searchParamValue) && (
-                                <button
-                                  key={`active-filter-${filterOption.id}`}
-                                  onClick={() => {
-                                    clearFilter([
-                                      {
-                                        filterId: filter.id,
-                                        filterValue: searchParamValue,
-                                      },
-                                    ]);
-                                  }}
-                                >
-                                  {filterOption.label}
-                                </button>
-                              )
-                            );
-                          })}
-                        </>
-                      );
+                      return filter.values.map((filterOption) => {
+                        const searchParamValue = filter.id.startsWith(
+                          'filter.p.m.',
+                        )
+                          ? `${filterOption.label}-${filterOption.id.split('-').pop()}`
+                          : filterOption.label;
+                        return (
+                          searchParams.has(filter.id, searchParamValue) && (
+                            <button
+                              key={`active-filter-${filterOption.id}`}
+                              onClick={() => {
+                                clearFilter([
+                                  {
+                                    filterId: filter.id,
+                                    filterValue: searchParamValue,
+                                  },
+                                ]);
+                              }}
+                            >
+                              {filterOption.label}
+                            </button>
+                          )
+                        );
+                      });
                     }
                     return <></>;
                   })}
@@ -569,6 +565,7 @@ function FilterListOptions({
                       ? searchParams.has(filter.id, searchParamValue)
                       : false
                   }
+                  readOnly
                 />
                 <span>{filterOption.label}</span>
               </li>

@@ -120,10 +120,6 @@ input:focus {
   opacity: 0.8;
 }
 
-.header-menu-mobile .header-menu-item-container:hover {
-  background-color: var(--color-background-dark);
-}
-
 /*
 * --------------------------------------------------
 * Buttons
@@ -459,21 +455,7 @@ button.reset:hover:not(:has(> *)) {
 .header-menu-mobile {
   display: flex;
   flex-direction: column;
-}
-
-.header-menu-mobile .header-menu-item-container {
-  border-bottom: 1px solid var(--color-primary-main);
-}
-
-.header-menu-mobile .header-menu-item {
-  text-transform: uppercase;
-  font-weight: 300;
-  padding: 0 15px;
-  min-height: 50px;
-}
-
-.header-menu-mobile .header-menu-item span {
-  text-transform: uppercase;
+  position: relative;
 }
 
 .header-menu-desktop {
@@ -607,12 +589,66 @@ button.reset:hover:not(:has(> *)) {
   object-fit: cover;
 }
 
+.header-menu-mobile .submenu-container {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  border: 0;
+  background-color: inherit;
+}
+
+.header-menu-mobile .mobile-menu-item:hover,
+.header-menu-mobile .mobile-submenu-item:hover {
+  background-color: var(--color-background-dark);
+}
+
+.mobile-menu-item,
+ [class^=mobile-submenu-item] {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  width: 100%;
+  align-items: stretch;
+  justify-content: space-between;
+  transform: translateX(0);
+  transition: all 0.2s ease-in-out;
+  border-bottom: 1px solid var(--color-primary-main);
+  text-transform: uppercase;
+  padding: var(--padding-small) var(--padding-inner);
+  color: var(--color-primary-main);
+}
+
+.mobile-menu-item span,
+ [class^=mobile-submenu-item] span {
+  color: var(--color-primary-main);
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-menu-item.hidden,
+ [class^=mobile-submenu-item].hidden {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.mobile-menu-item .submenu-with-image-text,
+ [class^=mobile-submenu-item] .submenu-with-image-text {
+  bottom: var(--padding-small);
+}
+
 .mobile-submenu-parent {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
   width: 100%;
+}
+
+.mobile-submenu-parent-content {
+  width: 100%;
+  display: flex;
 }
 
 /*
